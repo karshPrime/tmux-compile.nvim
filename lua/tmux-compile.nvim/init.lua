@@ -4,131 +4,104 @@
 local M = {}
 
 
---# Helpers #------------------------------------------------------------------
+--# Helper #-------------------------------------------------------------------
 
--- Detect if in a tmux session
-local function in_tmux()
-    return os.getenv("TMUX") ~= nil
-end
-
--- Detect project language
-local function detect_language()
-    local files = vim.fn.readdir(vim.fn.getcwd())
-    for _, file in ipairs(files) do
-        if file:match("%.c$") or file:match("%.cpp$") or file:match("%.h$") then
-            return "c_cpp"
-
-        elseif file:match("%.go$") then
-            return "go"
-
-        elseif file:match("%.rs$") then
-            return "rust"
-
+local function get_language_config(extension)
+    for _, lang_config in ipairs(M.config.languages) do
+        if vim.tbl_contains(lang_config.extension, extension) then
+            return lang_config
         end
     end
     return nil
 end
 
+local function get_current_file_extension()
+    return vim.fn.expand('%:e')
+end
 
---# Compile Commands #---------------------------------------------------------
 
--- Compile and/or run the project in tmux
-local function tmux_execute(command, new_pane)
-    if not in_tmux() then
-        print("Not in a tmux session.")
+--# Helper #-------------------------------------------------------------------
+
+local function tmux_execute(command, placement)
+    local pane_cmd = ""
+    if placement == "below" then
+        pane_cmd = "split-window -v"
+
+    elseif placement == "side" then
+        pane_cmd = "split-window -h"
+
+    elseif placement == "new_window" then
+        pane_cmd = "new-window -n run"
+
+    else
         return
     end
 
-    local pane_cmd = new_pane == "below" and "split-window -v" or "split-window -h"
-    if new_pane == "window" then
-        pane_cmd = "new-window -n run"
-    end
-
-    os.execute(string.format("tmux %s '%s'", pane_cmd, command))
+    local full_command = string.format("tmux %s '%s'", pane_cmd, command)
+    vim.cmd(full_command)
 end
 
--- Just compile the project                        **** ADD LANGUAGES HERE ****
-local function compile_project()
-    local lang = detect_language()
-    if lang == "go" then
-        return "go build $(find . -type f -iname 'main.go')"
+local function compile_project(placement)
+    local extension = get_current_file_extension()
+    local lang_config = get_language_config(extension)
 
-    elseif lang == "rust" then
-        return "cargo build"
-
-    elseif lang == "c_cpp" then
-        return "make"
-
+    if lang_config then
+        local build_command = lang_config.build
+        tmux_execute(build_command, placement)
     else
-        print("Unsupported project type.")
-        return nil
+        vim.notify("Unsupported file type.")
     end
 end
 
+local function compile_and_run_project(placement)
+    local extension = get_current_file_extension()
+    local lang_config = get_language_config(extension)
 
--- Compile and run the project                     **** ADD LANGUAGES HERE ****
-
-local function compile_and_run_project()
-    local lang = detect_language()
-    if lang == "go" then
-        return "go run $(find . -type f -iname 'main.go')"
-
-    elseif lang == "rust" then
-        return "cargo run"
-
-    elseif lang == "c_cpp" then
-        return "make run"
-
+    if lang_config then
+        local build_command = lang_config.build
+        local run_command = lang_config.run
+        tmux_execute(build_command .. " && " .. run_command, placement)
     else
-        print("Unsupported project type.")
-        return nil
+        vim.notify("Unsupported file type.")
     end
 end
 
 
---# nvim Commands #------------------------------------------------------------
-
-function M.run_below()
-    local cmd = compile_and_run_project()
-    if cmd then
-        tmux_execute(cmd, "below")
-    end
-end
-
-function M.run_side()
-    local cmd = compile_and_run_project()
-    if cmd then
-        tmux_execute(cmd, "side")
-    end
-end
-
-function M.run_new_window()
-    local cmd = compile_and_run_project()
-    if cmd then
-        tmux_execute(cmd, "window")
-    end
-end
+--# Support functions for indie compile and run #------------------------------
 
 function M.compile_below()
-    local cmd = compile_project()
-    if cmd then
-        tmux_execute(cmd, "below")
-    end
+    compile_project("below")
 end
 
 function M.compile_side()
-    local cmd = compile_project()
-    if cmd then
-        tmux_execute(cmd, "side")
-    end
+    compile_project("side")
 end
 
 function M.compile_new_window()
-    local cmd = compile_project()
-    if cmd then
-        tmux_execute(cmd, "window")
-    end
+    compile_project("new_window")
 end
+
+function M.run_below()
+    compile_and_run_project("below")
+end
+
+function M.run_side()
+    compile_and_run_project("side")
+end
+
+function M.run_new_window()
+    compile_and_run_project("new_window")
+end
+
+function M.setup(config)
+    M.config = config
+end
+
+
+--# Export functions for use in keybindings #----------------------------------
+
+M.compile_project = compile_project
+M.compile_and_run_project = compile_and_run_project
 
 return M
 
