@@ -1,111 +1,115 @@
 -- tmux-compile.nvim
 -- Plugin to compile and run projects in tmux panes or windows
 
+--# INITIALISE #----------------------------------------------------------------
+
 local M = {}
-
-
---# Helper #-------------------------------------------------------------------
-
--- Get the configuration for the current file's extension
-local function get_language_config(extension)
-    for _, lang_config in ipairs(M.config.languages) do
-        if vim.tbl_contains(lang_config.extension, extension) then
-            return lang_config
-        end
-    end
-    return nil
-end
-
--- Get the current file's extension
-local function get_current_file_extension()
-    return vim.fn.expand('%:e')
-end
-
--- Execute a command in a new Tmux pane or window
-local function tmux_execute(command, placement)
-    if not vim.fn.exists('$TMUX') == 1 then
-        vim.notify("Not running inside a Tmux session.", vim.log.levels.ERROR)
-        return
-    end
-
-    local pane_cmd = ""
-    if placement == "below" then
-        pane_cmd = "split-window -v"
-    elseif placement == "side" then
-        pane_cmd = "split-window -h"
-    elseif placement == "new_window" then
-        pane_cmd = "new-window -n run"
-    else
-        vim.notify("Invalid placement option.", vim.log.levels.ERROR)
-        return
-    end
-
-    local full_command = string.format("tmux %s '%s'", pane_cmd, command)
-    vim.fn.system(full_command)
-end
-
--- compile the current project
-local function compile_project(placement)
-    local extension = get_current_file_extension()
-    local lang_config = get_language_config(extension)
-
-    if lang_config then
-        local build_command = lang_config.build
-        tmux_execute(build_command, placement)
-    else
-        vim.notify("Unsupported file type: " .. extension, vim.log.levels.ERROR)
-    end
-end
-
--- compile and run the current project
-local function compile_and_run_project(placement)
-    local extension = get_current_file_extension()
-    local lang_config = get_language_config(extension)
-
-    if lang_config then
-        local build_command = lang_config.build
-        local run_command = lang_config.run
-        tmux_execute(build_command .. " && " .. run_command, placement)
-    else
-        vim.notify("Unsupported file type: " .. extension, vim.log.levels.ERROR)
-    end
-end
-
-
---# Support functions for indie compile and run #------------------------------
-
--- compile the project in different Tmux placements
-function M.compile_below()
-    compile_project("below")
-end
-
-function M.compile_side()
-    compile_project("side")
-end
-
-function M.compile_new_window()
-    compile_project("new_window")
-end
-
--- compile and run the project in different Tmux placements
-function M.run_below()
-    compile_and_run_project("below")
-end
-
-function M.run_side()
-    compile_and_run_project("side")
-end
-
-function M.run_new_window()
-    compile_and_run_project("new_window")
-end
-
-
---# Process User Config #------------------------------------------------------
+M.config = {}
 
 function M.setup(config)
     M.config = config
 end
+
+--# HELPER FUNCTIONS #----------------------------------------------------------
+
+-- get the file extension
+local function get_file_extension()
+    local filename = vim.api.nvim_buf_get_name(0)
+    if filename == "" then return nil end
+    return filename:match("^.+(%..+)$"):sub(2)
+end
+
+-- get build and run commands based on file extension
+local function get_commands_for_extension(extension)
+    local fileExtension = get_file_extension()
+    if fileExtension then
+        for _, cfg in ipairs(M.config) do
+            if vim.tbl_contains(cfg.extension, extension) then
+                return cfg.build, cfg.run
+            end
+        end
+        print("No build and run commands found for this extension")
+    else
+        print("No file extension found")
+    end
+    return nil, nil
+end
+
+-- check if a tmux window with the given name exists
+local function tmux_window_exists(window_name)
+    local handle = io.popen("tmux list-windows | grep -w " .. window_name)
+    local result = handle:read("*a")
+    handle:close()
+    return result ~= ""
+end
+
+
+--# CALL FUNCTIONS #------------------------------------------------------------
+
+-- function to run the command in a new or existing tmux window
+function M.run_background()
+    local _, cmd = get_commands_for_extension(get_file_extension())
+    if cmd then
+        local window_name = "build"
+
+        if tmux_window_exists(window_name) then
+            local cmd_head = "silent !tmux select-window -t " .. window_name
+            vim.cmd(cmd_head .. " \\; send-keys '" .. cmd .. "' C-m")
+        else
+            local cmd_head = "silent !tmux new-window -n " .. window_name
+            vim.cmd(cmd_head .. " '" .. cmd .. "; zsh'")
+        end
+    else
+        print("No run command found for this extension")
+    end
+end
+
+function M.run_self(side)
+    local _, cmd = get_commands_for_extension(get_file_extension())
+    if cmd then
+        local cmd_head = "silent !tmux split-window "
+        vim.cmd(cmd_head .. side .. " -v '" .. cmd .. "; exec zsh'")
+    else
+        print("No run command found for this extension")
+    end
+end
+
+function M.make()
+    local cmd, _ = get_commands_for_extension(get_file_extension())
+    if cmd then
+        vim.cmd("silent !" .. cmd)
+    else
+        print("No build command found for this extension")
+    end
+end
+
+
+--# NVIM DISPATCH #-------------------------------------------------------------
+
+-- call the appropriate function based on the option
+function M.dispatch(option)
+    if option == "RunBG" then
+        M.run_background()
+    elseif option == "RunV" then
+        M.run_self("-v")
+    elseif option == "RunH" then
+        M.run_self("-h")
+    elseif option == "Make" then
+        M.make()
+    else
+        print("Invalid option. Please use one of: RunBG, RunV, RunH, Make")
+    end
+end
+
+-- invoke the dispatch function
+vim.api.nvim_create_user_command('TMUXcompile', function(args)
+    M.dispatch(args.args)
+end, {
+    nargs = 1,
+    complete = function(arglead, cmdline, cursorpos)
+        return { "RunBG", "RunV", "RunH", "Make" }
+    end,
+})
 
 return M
 
