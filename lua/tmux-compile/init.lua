@@ -67,6 +67,18 @@ function M.new_window(cmd)
         local window_name = "build"
 
         if tmux_window_exists(window_name) then
+            -- ensure build is in same directory as the project
+            local proj_dir = vim.fn.system("pwd")
+            proj_dir = vim.fn.trim(proj_dir)
+
+            local win_dir = vim.fn.system("tmux display -p -t 'build'  '#{pane_current_path}'")
+            win_dir = vim.fn.trim(win_dir)
+
+            if (win_dir ~= proj_dir) then 
+                cmd = "cd " .. proj_dir .. "; " .. cmd
+            end
+
+            -- run the command
             local cmd_head = "silent !tmux select-window -t " .. window_name
             vim.cmd(cmd_head .. " \\; send-keys '" .. cmd .. "' C-m")
         else
