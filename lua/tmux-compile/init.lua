@@ -10,6 +10,21 @@ function M.setup(config)
     M.config = config
 end
 
+--# CHECK ENVIRONMENT #---------------------------------------------------------
+
+-- confirm tmux is installed
+local function is_tmux_installed()
+    local output = vim.fn.system("which tmux 2>/dev/null")
+    return output ~= "" and not string.match(output, "tmux not found")
+end
+
+-- check if session is in tmux
+local function is_tmux_running()
+  local output = vim.fn.system("tmux info 2>/dev/null")
+  return output ~= "" and not string.match(output, "no client running")
+end
+
+
 --# HELPER FUNCTIONS #----------------------------------------------------------
 
 -- get the file extension
@@ -88,6 +103,19 @@ end
 
 -- call the appropriate function based on the option
 function M.dispatch(option)
+
+    -- confirm tmux is installed
+    if not is_tmux_installed() then
+        print("Error: install TMUX to use the plugin")
+        return 1
+    end
+
+    -- check if tmux running, else print error
+    if not is_tmux_running() then
+        print("Error: run session in TMUX")
+        return 1
+    end
+
     if option == "RunBG" then
         M.run_background()
     elseif option == "RunV" then

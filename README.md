@@ -26,7 +26,7 @@ Install using your favorite plugin manager. For example, using
 
 ## Keybinds
 
-```lua
+```vim
 vim.keymap.set('n', 'v<F5>', ':TMUXcompile RunV<CR>') -- run on horizontal split
 vim.keymap.set('n', 'h<F5>', ':TMUXcompile RunH<CR>') -- run on vertical split
 vim.keymap.set('n', '<F5>', ':TMUXcompile RunBG<CR>') -- run program in background
