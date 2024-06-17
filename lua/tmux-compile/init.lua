@@ -62,8 +62,7 @@ end
 --# CALL FUNCTIONS #------------------------------------------------------------
 
 -- function to run the command in a new or existing tmux window
-function M.run_background()
-    local _, cmd = get_commands_for_extension(get_file_extension())
+function M.new_window(cmd)
     if cmd then
         local window_name = "build"
 
@@ -79,22 +78,12 @@ function M.run_background()
     end
 end
 
-function M.run_self(side)
-    local _, cmd = get_commands_for_extension(get_file_extension())
+function M.same_window(cmd, side)
     if cmd then
         local cmd_head = "silent !tmux split-window "
         vim.cmd(cmd_head .. side .. " -v '" .. cmd .. "; exec zsh'")
     else
         print("No run command found for this extension")
-    end
-end
-
-function M.make()
-    local cmd, _ = get_commands_for_extension(get_file_extension())
-    if cmd then
-        vim.cmd("silent !" .. cmd)
-    else
-        print("No build command found for this extension")
     end
 end
 
@@ -116,14 +105,20 @@ function M.dispatch(option)
         return 1
     end
 
+    local make, run = get_commands_for_extension(get_file_extension())
+
     if option == "RunBG" then
-        M.run_background()
+        M.new_window(run)
     elseif option == "RunV" then
-        M.run_self("-v")
+        M.same_window(run, "-v")
     elseif option == "RunH" then
-        M.run_self("-h")
+        M.same_window(run, "-h")
+    elseif option == "MakeV" then
+        M.same_window(make, "-v")
+    elseif option == "MakeH" then
+        M.same_window(make, "-h")
     elseif option == "Make" then
-        M.make()
+        M.new_window(make)
     else
         print("Invalid option. Please use one of: RunBG, RunV, RunH, Make")
     end
