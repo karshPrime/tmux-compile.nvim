@@ -26,7 +26,7 @@ Install using your favorite plugin manager. For example, using
 
 ## Keybinds
 
-```vim
+```lua
 -- run on vertical split
 vim.keymap.set('n', 'v<F5>', ':TMUXcompile RunV<CR>, {silent=true})
 
