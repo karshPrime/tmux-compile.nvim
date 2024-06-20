@@ -22,6 +22,16 @@ local function is_tmux_running()
     return vim.env.TMUX ~= nil
 end
 
+-- create terminal buffer if it doesn't already exists
+local function terminal_buffer()
+    local bufnr = vim.fn.bufnr('terminal')
+    if bufnr == -1 then
+        vim.cmd(":terminal<CR>:file term<CR>:setlocal nonu norelativenumber<CR>:norm 4jA<CR>")
+    else
+        vim.cmd(":buffer terminal<CR>")
+    end
+end
+
 
 --# HELPER FUNCTIONS #----------------------------------------------------------
 
@@ -56,7 +66,16 @@ end
 --# CALL FUNCTIONS #------------------------------------------------------------
 
 -- run command in a new or existing tmux window
-local function new_window(cmd, new_cmd)
+local function tmux_window(cmd)
+    if not is_tmux_running() then
+        print("Error: run session in TMUX")
+        return 1
+    end
+    if not is_tmux_installed() then
+        print("Error: install TMUX to use the plugin")
+        return 1
+    end
+
     local window_name = "build"
 
     if tmux_window_exists(window_name) then
@@ -75,11 +94,22 @@ local function new_window(cmd, new_cmd)
     end
 end
 
--- run command in same window on a new pane
-local function split_window(cmd, side)
+-- run command on top of current vim session
+local function override_window(cmd)
     if cmd then
-        local cmd_head = "silent !tmux split-window " .. side
-        vim.cmd(cmd_head .. " '" .. cmd .. "; exec zsh'")
+        terminal_buffer()
+        vim.cmd("silent !" cmd .. "<CR>")
+    else
+        print("Error: No run command found for this extension")
+    end
+end
+
+-- run command in a new vim pane
+local function vim_pane(cmd, side)
+    if cmd then
+        vim.cmd(side)
+        terminal_buffer()
+        vim.cmd("silent !" .. cmd .. "<CR>")
     else
         print("Error: No run command found for this extension")
     end
@@ -90,33 +120,27 @@ end
 
 -- call the appropriate function based on the option
 function M.dispatch(option)
-    if not is_tmux_installed() then
-        print("Error: install TMUX to use the plugin")
-        return 1
-    end
-
-    if not is_tmux_running() then
-        print("Error: run session in TMUX")
-        return 1
-    end
-
     local extension = get_file_extension()
     local make, run = get_commands_for_extension(extension)
 
-    if option == "RunBG" then
-        new_window(run, true)
+    if option == "Make" then
+        override_window(make)
+    elseif option == "Run" then
+        override_window(run)
     elseif option == "RunV" then
-        split_window(run, "-v")
+        vim_pane(run, ":vsplit")
     elseif option == "RunH" then
-        split_window(run, "-h")
+        vim_pane(run, ":split")
     elseif option == "MakeV" then
-        split_window(make, "-v")
+        vim_pane(make, ":vsplit")
     elseif option == "MakeH" then
-        split_window(make, "-h")
-    elseif option == "Make" then
-        new_window(make, true)
+        vim_pane(make, ":split")
+    elseif option == "MakeBG" then
+        tmux_window(make)
+    elseif option == "RunBG" then
+        tmux_window(run)
     else
-        print("Error: Invalid option. Please use one of: RunBG, RunV, RunH, Make")
+        print("Error: Invalid Option. Try: Make, Run, RunV, RunH, MakeBG, RunBG")
     end
 end
 
@@ -126,7 +150,7 @@ vim.api.nvim_create_user_command('TMUXcompile', function(args)
 end, {
     nargs = 1,
     complete = function()
-        return { "RunBG", "RunV", "RunH", "Make" }
+        return { "Make", "Run", "RunV", "RunH", "MakeBG", "RunBG" }
     end,
 })
 
