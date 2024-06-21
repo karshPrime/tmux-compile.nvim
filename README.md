@@ -15,7 +15,7 @@ Install using your favorite plugin manager. For example, using
     {
         extension = {'c', 'cpp', 'h'},
         build = 'make',
-        run = 'make run', -- or corresponding your makefile action
+        run = 'make run',
     },
     {
         extension = {'go'},
