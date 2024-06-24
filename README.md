@@ -8,17 +8,23 @@ allowing customisation of build and run commands.
 
 ⚠️ [Compatibility Broken](#important-notice-backward-compatibility) ⚠️
 
-## Installation
+## Install & Setup
 
 Install using your favorite plugin manager. For example, using
 [lazy.nvim](https://github.com/folke/lazy.nvim):
 ```lua
-{'karshPrime/tmux-compile.nvim', event = 'VeryLazy', config = {
-    -- Default configurations which can be overridden in your setup
-    overlay_sleep = 1,                 -- Default pause before overlay autocloses
-    overlay_width_percent = 80,        -- Default overlay width percentage
-    overlay_height_percent = 80,       -- Default overlay height percentage
-    build_run_window_title = "build",  -- Default tmux window name for build/run
+{ 'karshPrime/tmux-compile.nvim', event = 'VeryLazy' },
+```
+And setup it with:
+```lua
+require('tmux-compile').setup({
+    -- Overriding default configurations. [OPTIONAL]
+    overlay_sleep = 1,                 -- Pause before overlay autocloses
+    overlay_width_percent = 80,        -- Overlay width percentage
+    overlay_height_percent = 80,       -- Overlay height percentage
+    build_run_window_title = "build",  -- Tmux window name for Build/Run
+
+    -- Languages' Run and Build actions.  [REQUIRED]
     build_run_config = {
         {
             extension = {'c', 'cpp', 'h'},
@@ -57,19 +63,19 @@ vim.keymap.set('n','<F5>', ':TMUXcompile Run<CR>', {silent=true})
 | Action / Purpose                                        | Command               |
 |---------------------------------------------------------|-----------------------|
 | Compile program in an overlay terminal window           | `:TMUXcompile Make`   |
-| Compile program in a tmux window                        | `:TMUXcompile MakeBG` |
+| Compile program in a new tmux window                    | `:TMUXcompile MakeBG` |
 | Compile program in a new pane next to current nvim pane | `:TMUXcompile MakeV`  |
 | Compile program in a new pane bellow current nvim pane  | `:TMUXcompile MakeH`  |
 | Run program in an overlay terminal window               | `:TMUXcompile Run`    |
-| Run program in a tmux window                            | `:TMUXcompile RunBG`  |
+| Run program in a tmux new window                        | `:TMUXcompile RunBG`  |
 | Run program in a new pane next to current nvim pane     | `:TMUXcompile RunV`   |
 | Run program in a new pane bellow current nvim pane      | `:TMUXcompile RunH`   |
 
-\* "Run" here includes both compiling and running the program, depending on the
-run command specified for the file type.
+\* **Run** here includes both compiling and running the program, depending on the
+run command specified for the file extension.
 
 
-## Important Notice: Backward Compatibility
+## Important Notice: Backward Compatibility Break
 Please note that backward compatibility is broken from Version 1 to Version 2
 due to the implementation of a more robust configuration system. In the previous
 version, user configuration consisted of a simple list of extensions with their
