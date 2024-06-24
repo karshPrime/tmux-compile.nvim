@@ -84,14 +84,14 @@ local function new_window(cmd)
 end
 
 -- run command in an overlay pane
-local function overlay(cmd)
+local function overlay(cmd, sleep_duration)
     if cmd then
         local proj_dir = vim.fn.trim(vim.fn.system("pwd"))
         local cmd_head = "silent !tmux display-popup -E -d" .. proj_dir
 
         local dimensions = " -w " .. M.config.overlay_width_percent .. "\\% -h " .. M.config.overlay_height_percent .. "\\% '"
 
-        local sleep = "; sleep " .. M.config.overlay_sleep .. "'"
+        local sleep = "; sleep " .. sleep_duration .. "'"
 
         vim.cmd(cmd_head .. dimensions .. cmd .. sleep)
     else
@@ -106,6 +106,15 @@ local function split_window(cmd, side)
         vim.cmd(cmd_head .. " '" .. cmd .. "; exec zsh'")
     else
         print("Error: Command not found for this extension")
+    end
+end
+
+-- run lazygit in an overlay pane
+local function lazygit()
+    if vim.fn.executable("lazygit") == 1 then
+        overlay("lazygit", 0)
+    else
+        print("Error: lazygit not installed.")
     end
 end
 
@@ -126,10 +135,12 @@ function M.dispatch(option)
     local extension = get_file_extension()
     local make, run = get_commands_for_extension(extension)
 
-    if option == "Make" then
-        overlay(make)
+    if option == "lazygit" then
+        lazygit()
+    elseif option == "Make" then
+        overlay(make, M.config.overlay_sleep)
     elseif option == "Run" then
-        overlay(run)
+        overlay(run, M.config.overlay_sleep)
     elseif option == "RunV" then
         split_window(run, "-v")
     elseif option == "RunH" then
@@ -143,7 +154,8 @@ function M.dispatch(option)
     elseif option == "RunBG" then
         new_window(run)
     else
-        print("Error: Invalid option. Please use one of: Make, Run, RunV, RunH, MakeBG, RunBG")
+        print("Error: Invalid option.")
+        print("Please use one of: Make, Run, RunV, RunH, MakeBG, RunBG, lazygit")
     end
 end
 
@@ -153,7 +165,7 @@ vim.api.nvim_create_user_command('TMUXcompile', function(args)
 end, {
     nargs = 1,
     complete = function()
-        return { "Make", "Run", "RunV", "RunH", "RunBG", "MakeBG" }
+        return { "Make", "Run", "RunV", "RunH", "RunBG", "MakeBG", "lazygit"}
     end,
 })
 

@@ -4,9 +4,12 @@ Neovim plugin designed to simplify the process of compiling and running projects
 within tmux panes or windows. Supports multiple programming languages by
 allowing customisation of build and run commands.
 
-![preview](.media/screenshot.gif)
+Also supports running [lazygit](https://github.com/jesseduffield/lazygit) from
+within current Neovim session on an overlay terminal.
 
-⚠️ [Compatibility Broken](#important-notice-backward-compatibility) ⚠️
+⚠️ [Version 2 Backward Compatibility Broken](#important-notice-backward-compatibility) ⚠️
+
+![preview](.media/screenshot.gif)
 
 ## Install & Setup
 
@@ -70,6 +73,7 @@ vim.keymap.set('n','<F5>', ':TMUXcompile Run<CR>', {silent=true})
 | Run program in a tmux new window                        | `:TMUXcompile RunBG`  |
 | Run program in a new pane next to current nvim pane     | `:TMUXcompile RunV`   |
 | Run program in a new pane bellow current nvim pane      | `:TMUXcompile RunH`   |
+| Open lazygit in overlay                                 | `:TMUXcompile lazygit`|
 
 \* **Run** here includes both compiling and running the program, depending on the
 run command specified for the file extension.
