@@ -22,7 +22,7 @@ And setup it with:
 ```lua
 require('tmux-compile').setup({
     -- Overriding default configurations. [OPTIONAL]
-    save_session = true,              -- Save file before action
+    save_session = false,              -- Save file before action
     overlay_sleep = 1,                -- Pause before overlay autoclose; seconds
     overlay_width_percent = 80,       -- Overlay width percentage
     overlay_height_percent = 80,      -- Overlay height percentage

@@ -14,12 +14,9 @@ M.config = {
 }
 
 function M.setup(config)
-    M.config.save_session = config.save_session or M.config.save_session
-    M.config.overlay_sleep = config.overlay_sleep or M.config.overlay_sleep
-    M.config.overlay_width_percent = config.overlay_width_percent or M.config.overlay_width_percent
-    M.config.overlay_height_percent = config.overlay_height_percent or M.config.overlay_height_percent
-    M.config.build_run_window_title = config.build_run_window_title or M.config.build_run_window_title
-    M.config.build_run_config = config.build_run_config or M.config.build_run_config
+    for key, value in pairs(config) do
+        M.config[key] = value or M.config[key]
+    end
 end
 
 
@@ -46,16 +43,12 @@ end
 
 -- get build, run & debug commands based on file extension
 local function get_commands_for_extension(extension)
-    if extension then
-        for _, cfg in ipairs(M.config.build_run_config) do
-            if vim.tbl_contains(cfg.extension, extension) then
-                return cfg.build, cfg.run, cfg.debug
-            end
+    for _, cfg in ipairs(M.config.build_run_config) do
+        if vim.tbl_contains(cfg.extension, extension) then
+            return cfg.build, cfg.run, cfg.debug
         end
-        print("Error: No build and run commands found for this extension")
-    else
-        print("Error: No file extension found")
     end
+    print("Error: No build and run commands found for this extension")
     return nil, nil, nil
 end
 
@@ -65,18 +58,22 @@ local function tmux_window_exists(window_name)
     return result ~= ""
 end
 
+-- common function to prepare and execute tmux commands
+local function execute_tmux_cmd(cmd, error_name, tmux_cmd_head)
+    if not cmd then
+        local extension = get_file_extension()
+        print("Error: " .. error_name .. " command not found for " .. extension)
+        return 1
+    end
+    vim.cmd(tmux_cmd_head .. " '" .. cmd .. "; zsh'")
+end
+
 
 --# CALL FUNCTIONS #------------------------------------------------------------
 
 -- run command in a new or existing tmux window
 local function new_window(cmd, error_name)
     local window_name = M.config.build_run_window_title
-
-    if not cmd then
-        local extension = get_file_extension()
-        print("Error: " .. error_name ..  " command not found for " .. extension)
-        return 1
-    end
 
     if tmux_window_exists(window_name) then
         local proj_dir = vim.fn.trim(vim.fn.system("pwd"))
@@ -86,11 +83,9 @@ local function new_window(cmd, error_name)
             cmd = "cd " .. proj_dir .. "; " .. cmd
         end
 
-        local cmd_head = "silent !tmux select-window -t " .. window_name
-        vim.cmd(cmd_head .. " \\; send-keys '" .. cmd .. "' C-m")
+        execute_tmux_cmd(cmd, error_name, "silent !tmux select-window -t " .. window_name .. " \\; send-keys ")
     else
-        local cmd_head = "silent !tmux new-window -n " .. window_name
-        vim.cmd(cmd_head .. " '" .. cmd .. "; zsh'")
+        execute_tmux_cmd(cmd, error_name, "silent !tmux new-window -n " .. window_name)
     end
 end
 
@@ -98,7 +93,7 @@ end
 local function overlay(cmd, sleep_duration, error_name)
     if not cmd then
         local extension = get_file_extension()
-        print("Error: " .. error_name ..  " command not found for " .. extension)
+        print("Error: " .. error_name .. " command not found for " .. extension)
         return 1
     end
 
@@ -114,14 +109,7 @@ end
 
 -- run command in same window on a new pane
 local function split_window(cmd, side, error_name)
-    if not cmd then
-        local extension = get_file_extension()
-        print("Error: " .. error_name ..  " command not found for " .. extension)
-        return 1
-    end
-
-    local cmd_head = "silent !tmux split-window " .. side
-    vim.cmd(cmd_head .. " '" .. cmd .. "; exec zsh'")
+    execute_tmux_cmd(cmd, error_name, "silent !tmux split-window " .. side)
 end
 
 -- run lazygit in an overlay pane
@@ -132,7 +120,6 @@ local function lazygit()
         print("Error: lazygit not installed.")
     end
 end
-
 
 --# NVIM DISPATCH #-------------------------------------------------------------
 
@@ -155,32 +142,24 @@ function M.dispatch(option)
     local extension = get_file_extension()
     local make, run, debug = get_commands_for_extension(extension)
 
-    if option == "lazygit" then
-        lazygit()
-    elseif option == "Run" then
-        overlay(run, M.config.overlay_sleep, "Run")
-    elseif option == "RunV" then
-        split_window(run, "-v", "Run")
-    elseif option == "RunH" then
-        split_window(run, "-h", "Run")
-    elseif option == "RunBG" then
-        new_window(run, "Run")
-    elseif option == "Make" then
-        overlay(make, M.config.overlay_sleep, "Make")
-    elseif option == "MakeV" then
-        split_window(make, "-v", "Make")
-    elseif option == "MakeH" then
-        split_window(make, "-h", "Make")
-    elseif option == "MakeBG" then
-        new_window(make, "Make")
-    elseif option == "Debug" then
-        overlay(debug, M.config.overlay_sleep, "Debug")
-    elseif option == "DebugV" then
-        split_window(debug, "-v", "Debug")
-    elseif option == "DebugH" then
-        split_window(debug, "-h", "Debug")
-    elseif option == "DebugBG" then
-        new_window(debug, "Debug")
+    local commands = {
+        lazygit = lazygit,
+        Run = function() overlay(run, M.config.overlay_sleep, "Run") end,
+        RunV = function() split_window(run, "-v", "Run") end,
+        RunH = function() split_window(run, "-h", "Run") end,
+        RunBG = function() new_window(run, "Run") end,
+        Make = function() overlay(make, M.config.overlay_sleep, "Make") end,
+        MakeV = function() split_window(make, "-v", "Make") end,
+        MakeH = function() split_window(make, "-h", "Make") end,
+        MakeBG = function() new_window(make, "Make") end,
+        Debug = function() overlay(debug, M.config.overlay_sleep, "Debug") end,
+        DebugV = function() split_window(debug, "-v", "Debug") end,
+        DebugH = function() split_window(debug, "-h", "Debug") end,
+        DebugBG = function() new_window(debug, "Debug") end
+    }
+
+    if commands[option] then
+        commands[option]()
     else
         print("Error: Invalid option.")
     end
@@ -192,11 +171,12 @@ vim.api.nvim_create_user_command('TMUXcompile', function(args)
 end, {
     nargs = 1,
     complete = function()
-        return { "lazygit",
-                 "Run", "RunV", "RunH", "RunBG",
-                 "Make", "MakeV", "MakeH", "MakeBG",
-                 "Debug", "DebugV", "DebugH", "DebugBG"
-               }
+        return {
+            "lazygit",
+            "Run", "RunV", "RunH", "RunBG",
+            "Make", "MakeV", "MakeH", "MakeBG",
+            "Debug", "DebugV", "DebugH", "DebugBG"
+        }
     end,
 })
 
