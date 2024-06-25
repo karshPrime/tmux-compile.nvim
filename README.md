@@ -34,16 +34,20 @@ require('tmux-compile').setup({
             extension = {'c', 'cpp', 'h'},
             build = 'make',
             run = 'make run',
+            debug = 'lldb',
         },
         {
             extension = {'rs'},
             build = 'cargo build',
             run = 'cargo run',
+            -- not all properties are required for all extensions
         },
         {
             extension = {'go'},
-            build = 'go build',
             run = 'go run .',
+            -- Run would work for golang
+            -- but Build and Debug will return errors informing configs are
+            -- missing
         }
     }
 }},
@@ -74,6 +78,10 @@ vim.keymap.set('n','<F5>', ':TMUXcompile Run<CR>', {silent=true})
 | Run program in a tmux new window                        | `:TMUXcompile RunBG`  |
 | Run program in a new pane next to current nvim pane     | `:TMUXcompile RunV`   |
 | Run program in a new pane bellow current nvim pane      | `:TMUXcompile RunH`   |
+| Start debugger in an overlay terminal window            | `:TMUXcompile Debug`  |
+| Start debugger in a tmux new window                     | `:TMUXcompile DebugBG`|
+| Start debugger in a new pane next to current nvim pane  | `:TMUXcompile DebugV` |
+| Start debugger in a new pane bellow current nvim pane   | `:TMUXcompile DebugH` |
 | Open lazygit in overlay                                 | `:TMUXcompile lazygit`|
 
 \* **Run** here includes both compiling and running the program, depending on the

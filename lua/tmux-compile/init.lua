@@ -69,8 +69,14 @@ end
 --# CALL FUNCTIONS #------------------------------------------------------------
 
 -- run command in a new or existing tmux window
-local function new_window(cmd)
+local function new_window(cmd, error_name)
     local window_name = M.config.build_run_window_title
+
+    if not cmd then
+        local extension = get_file_extension()
+        print("Error: " .. error_name ..  " command not found for " .. extension)
+        return 1
+    end
 
     if tmux_window_exists(window_name) then
         local proj_dir = vim.fn.trim(vim.fn.system("pwd"))
@@ -89,29 +95,33 @@ local function new_window(cmd)
 end
 
 -- run command in an overlay pane
-local function overlay(cmd, sleep_duration)
-    if cmd then
-        local proj_dir = vim.fn.trim(vim.fn.system("pwd"))
-        local cmd_head = "silent !tmux display-popup -E -d" .. proj_dir
-
-        local dimensions = " -w " .. M.config.overlay_width_percent .. "\\% -h " .. M.config.overlay_height_percent .. "\\% '"
-
-        local sleep = "; sleep " .. sleep_duration .. "'"
-
-        vim.cmd(cmd_head .. dimensions .. cmd .. sleep)
-    else
-        print("Error: Command not found for this extension")
+local function overlay(cmd, sleep_duration, error_name)
+    if not cmd then
+        local extension = get_file_extension()
+        print("Error: " .. error_name ..  " command not found for " .. extension)
+        return 1
     end
+
+    local proj_dir = vim.fn.trim(vim.fn.system("pwd"))
+    local cmd_head = "silent !tmux display-popup -E -d" .. proj_dir
+
+    local dimensions = " -w " .. M.config.overlay_width_percent .. "\\% -h " .. M.config.overlay_height_percent .. "\\% '"
+
+    local sleep = "; sleep " .. sleep_duration .. "'"
+
+    vim.cmd(cmd_head .. dimensions .. cmd .. sleep)
 end
 
 -- run command in same window on a new pane
-local function split_window(cmd, side)
-    if cmd then
-        local cmd_head = "silent !tmux split-window " .. side
-        vim.cmd(cmd_head .. " '" .. cmd .. "; exec zsh'")
-    else
-        print("Error: Command not found for this extension")
+local function split_window(cmd, side, error_name)
+    if not cmd then
+        local extension = get_file_extension()
+        print("Error: " .. error_name ..  " command not found for " .. extension)
+        return 1
     end
+
+    local cmd_head = "silent !tmux split-window " .. side
+    vim.cmd(cmd_head .. " '" .. cmd .. "; exec zsh'")
 end
 
 -- run lazygit in an overlay pane
