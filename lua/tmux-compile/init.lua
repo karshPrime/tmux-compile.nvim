@@ -5,6 +5,7 @@
 
 local M = {}
 M.config = {
+    save_session = false,
     overlay_sleep = 1,
     overlay_width_percent = 80,
     overlay_height_percent = 80,
@@ -13,12 +14,14 @@ M.config = {
 }
 
 function M.setup(config)
+    M.config.save_session = config.save_session or M.config.save_session
     M.config.overlay_sleep = config.overlay_sleep or M.config.overlay_sleep
     M.config.overlay_width_percent = config.overlay_width_percent or M.config.overlay_width_percent
     M.config.overlay_height_percent = config.overlay_height_percent or M.config.overlay_height_percent
     M.config.build_run_window_title = config.build_run_window_title or M.config.build_run_window_title
     M.config.build_run_config = config.build_run_config or M.config.build_run_config
 end
+
 
 --# CHECK ENVIRONMENT #---------------------------------------------------------
 
@@ -31,6 +34,7 @@ end
 local function is_tmux_running()
     return vim.env.TMUX ~= nil
 end
+
 
 --# HELPER FUNCTIONS #----------------------------------------------------------
 
@@ -60,6 +64,7 @@ local function tmux_window_exists(window_name)
     local result = vim.fn.system("tmux list-windows | grep -w " .. window_name)
     return result ~= ""
 end
+
 
 --# CALL FUNCTIONS #------------------------------------------------------------
 
@@ -118,6 +123,7 @@ local function lazygit()
     end
 end
 
+
 --# NVIM DISPATCH #-------------------------------------------------------------
 
 -- call the appropriate function based on the option
@@ -130,6 +136,10 @@ function M.dispatch(option)
     if not is_tmux_running() then
         print("Error: run session in TMUX")
         return 1
+    end
+
+    if M.config.save_session then
+        vim.cmd(":wall")
     end
 
     local extension = get_file_extension()

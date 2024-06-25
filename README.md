@@ -22,10 +22,11 @@ And setup it with:
 ```lua
 require('tmux-compile').setup({
     -- Overriding default configurations. [OPTIONAL]
-    overlay_sleep = 1,                 -- Pause before overlay autocloses
-    overlay_width_percent = 80,        -- Overlay width percentage
-    overlay_height_percent = 80,       -- Overlay height percentage
-    build_run_window_title = "build",  -- Tmux window name for Build/Run
+    save_session = true,              -- Save file before action
+    overlay_sleep = 1,                -- Pause before overlay autoclose; seconds
+    overlay_width_percent = 80,       -- Overlay width percentage
+    overlay_height_percent = 80,      -- Overlay height percentage
+    build_run_window_title = "build", -- Tmux window name for Build/Run
 
     -- Languages' Run and Build actions.  [REQUIRED]
     build_run_config = {
