@@ -44,19 +44,19 @@ local function get_file_extension()
     return filename:match("^.+(%..+)$"):sub(2)
 end
 
--- get build and run commands based on file extension
+-- get build, run & debug commands based on file extension
 local function get_commands_for_extension(extension)
     if extension then
         for _, cfg in ipairs(M.config.build_run_config) do
             if vim.tbl_contains(cfg.extension, extension) then
-                return cfg.build, cfg.run
+                return cfg.build, cfg.run, cfg.debug
             end
         end
         print("Error: No build and run commands found for this extension")
     else
         print("Error: No file extension found")
     end
-    return nil, nil
+    return nil, nil, nil
 end
 
 -- check if a tmux window with the given name exists
@@ -143,29 +143,36 @@ function M.dispatch(option)
     end
 
     local extension = get_file_extension()
-    local make, run = get_commands_for_extension(extension)
+    local make, run, debug = get_commands_for_extension(extension)
 
     if option == "lazygit" then
         lazygit()
-    elseif option == "Make" then
-        overlay(make, M.config.overlay_sleep)
     elseif option == "Run" then
-        overlay(run, M.config.overlay_sleep)
+        overlay(run, M.config.overlay_sleep, "Run")
     elseif option == "RunV" then
-        split_window(run, "-v")
+        split_window(run, "-v", "Run")
     elseif option == "RunH" then
-        split_window(run, "-h")
-    elseif option == "MakeV" then
-        split_window(make, "-v")
-    elseif option == "MakeH" then
-        split_window(make, "-h")
-    elseif option == "MakeBG" then
-        new_window(make)
+        split_window(run, "-h", "Run")
     elseif option == "RunBG" then
-        new_window(run)
+        new_window(run, "Run")
+    elseif option == "Make" then
+        overlay(make, M.config.overlay_sleep, "Make")
+    elseif option == "MakeV" then
+        split_window(make, "-v", "Make")
+    elseif option == "MakeH" then
+        split_window(make, "-h", "Make")
+    elseif option == "MakeBG" then
+        new_window(make, "Make")
+    elseif option == "Debug" then
+        overlay(debug, M.config.overlay_sleep, "Debug")
+    elseif option == "DebugV" then
+        split_window(debug, "-v", "Debug")
+    elseif option == "DebugH" then
+        split_window(debug, "-h", "Debug")
+    elseif option == "DebugBG" then
+        new_window(debug, "Debug")
     else
         print("Error: Invalid option.")
-        print("Please use one of: Make, Run, RunV, RunH, MakeBG, RunBG, lazygit")
     end
 end
 
@@ -175,7 +182,11 @@ vim.api.nvim_create_user_command('TMUXcompile', function(args)
 end, {
     nargs = 1,
     complete = function()
-        return { "Make", "Run", "RunV", "RunH", "RunBG", "MakeBG", "lazygit"}
+        return { "lazygit",
+                 "Run", "RunV", "RunH", "RunBG",
+                 "Make", "MakeV", "MakeH", "MakeBG",
+                 "Debug", "DebugV", "DebugH", "DebugBG"
+               }
     end,
 })
 
