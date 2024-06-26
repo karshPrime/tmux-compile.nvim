@@ -10,6 +10,8 @@ M.config = {
     overlay_width_percent = 80,
     overlay_height_percent = 80,
     build_run_window_title = "build",
+    side_width_percent = 50,
+    bottom_height_percent = 30,
     build_run_config = {}
 }
 
@@ -123,12 +125,18 @@ local function split_window(cmd, side, error_name)
         h = "-R"
     }
 
+    local length_percentage = {
+        v = M.config.bottom_height_percent,
+        h = M.config.side_width_percent
+    }
+
     local current_pane = vim.fn.system("tmux display -p '#{pane_id}'")
     vim.fn.system("tmux selectp " .. direction_lookup[side])
     local moved_pane = vim.fn.system("tmux display -p '#{pane_id}'")
 
     if (vim.trim(current_pane) == vim.trim(moved_pane)) then
-        vim.fn.system("tmux splitw -" .. side .. " '" .. cmd .. "; zsh'")
+        local parameters = side .. " -l " .. length_percentage[side] .. "%"
+        vim.fn.system("tmux splitw -" .. parameters .. " '" .. cmd .. "; zsh'")
     else
         cmd = change_dir(vim.trim(moved_pane)) .. cmd
         vim.fn.system("tmux send -t " .. vim.trim(moved_pane) .. " '" .. cmd .. "' C-m")
@@ -204,5 +212,4 @@ end, {
 })
 
 return M
-
 
