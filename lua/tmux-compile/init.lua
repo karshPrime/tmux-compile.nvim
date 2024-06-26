@@ -58,6 +58,18 @@ local function tmux_window_exists(window_name)
     return result ~= ""
 end
 
+-- change directory if not same as project
+local function change_dir(pane)
+    local proj_dir = vim.fn.trim(vim.fn.system("pwd"))
+    local win_dir = vim.fn.trim(vim.fn.system("tmux display -p -t " .. pane .. " '#{pane_current_path}'"))
+
+    if win_dir ~= proj_dir then
+        return "cd " .. proj_dir .. "; "
+    end
+
+    return ""
+end
+
 
 --# CALL FUNCTIONS #------------------------------------------------------------
 
@@ -72,12 +84,7 @@ local function new_window(cmd, error_name)
     local window_name = M.config.build_run_window_title
 
     if tmux_window_exists(window_name) then
-        local proj_dir = vim.fn.trim(vim.fn.system("pwd"))
-        local win_dir = vim.fn.trim(vim.fn.system("tmux display -p -t " .. window_name .. " '#{pane_current_path}'"))
-
-        if win_dir ~= proj_dir then
-            cmd = "cd " .. proj_dir .. "; " .. cmd
-        end
+        cmd = change_dir(window_name) .. cmd
 
         vim.fn.system("tmux selectw -t " .. window_name .. " \\; send-keys '" .. cmd .. "' C-m")
     else
@@ -123,6 +130,7 @@ local function split_window(cmd, side, error_name)
     if (vim.trim(current_pane) == vim.trim(moved_pane)) then
         vim.fn.system("tmux splitw -" .. side .. " '" .. cmd .. "; zsh'")
     else
+        cmd = change_dir(vim.trim(moved_pane)) .. cmd
         vim.fn.system("tmux send -t " .. vim.trim(moved_pane) .. " '" .. cmd .. "' C-m")
     end
 end
