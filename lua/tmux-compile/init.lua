@@ -58,21 +58,17 @@ local function tmux_window_exists(window_name)
     return result ~= ""
 end
 
--- common function to prepare and execute tmux commands
-local function execute_tmux_cmd(cmd, error_name, tmux_cmd_head)
-    if not cmd then
-        local extension = get_file_extension()
-        print("Error: " .. error_name .. " command not found for " .. extension)
-        return 1
-    end
-    vim.cmd(tmux_cmd_head .. " '" .. cmd .. "; zsh'")
-end
-
 
 --# CALL FUNCTIONS #------------------------------------------------------------
 
 -- run command in a new or existing tmux window
 local function new_window(cmd, error_name)
+    if not cmd then
+        local extension = get_file_extension()
+        print("Error: " .. error_name .. " command not found for " .. extension)
+        return 1
+    end
+
     local window_name = M.config.build_run_window_title
 
     if tmux_window_exists(window_name) then
@@ -83,9 +79,9 @@ local function new_window(cmd, error_name)
             cmd = "cd " .. proj_dir .. "; " .. cmd
         end
 
-        execute_tmux_cmd(cmd, error_name, "silent !tmux select-window -t " .. window_name .. " \\; send-keys ")
+        vim.fn.system("tmux selectw -t " .. window_name .. " \\; send-keys '" .. cmd .. "' C-m")
     else
-        execute_tmux_cmd(cmd, error_name, "silent !tmux new-window -n " .. window_name)
+        vim.fn.system("tmux neww -n " .. window_name .. " '" .. cmd .. "; zsh'")
     end
 end
 
@@ -98,32 +94,34 @@ local function overlay(cmd, sleep_duration, error_name)
     end
 
     local proj_dir = vim.fn.trim(vim.fn.system("pwd"))
-    local cmd_head = "silent !tmux display-popup -E -d" .. proj_dir
+    local cmd_head = "tmux display-popup -E -d" .. proj_dir
 
     local dimensions = " -w " .. M.config.overlay_width_percent .. "\\% -h " .. M.config.overlay_height_percent .. "\\% '"
 
     local sleep = "; sleep " .. sleep_duration .. "'"
 
-    vim.cmd(cmd_head .. dimensions .. cmd .. sleep)
+    vim.fn.system(cmd_head .. dimensions .. cmd .. sleep)
 end
 
 -- run command in same window on a new pane
 local function split_window(cmd, side, error_name)
+    if not cmd then
+        local extension = get_file_extension()
+        print("Error: " .. error_name .. " command not found for " .. extension)
+        return 1
+    end
+
     local direction_lookup = {
         v = "-D",
         h = "-R"
     }
 
-    local current_pane = vim.fn.system("tmux display-message -p '#{pane_id}'")
-    vim.fn.system("tmux select-pane " .. direction_lookup[side])
-    local moved_pane = vim.fn.system("tmux display-message -p '#{pane_id}'")
-
-    print(vim.trim(current_pane) == vim.trim(moved_pane))
+    local current_pane = vim.fn.system("tmux display -p '#{pane_id}'")
+    vim.fn.system("tmux selectp " .. direction_lookup[side])
+    local moved_pane = vim.fn.system("tmux display -p '#{pane_id}'")
 
     if (vim.trim(current_pane) == vim.trim(moved_pane)) then
-        vim.fn.system("tmux split-window -" .. side)
-        local new_pane = vim.fn.system("tmux display-message -p '#{pane_id}'")
-        vim.fn.system("tmux send -t " .. vim.trim(new_pane) .. " '" .. cmd .. "' C-m")
+        vim.fn.system("tmux splitw -" .. side .. " '" .. cmd .. "; zsh'")
     else
         vim.fn.system("tmux send -t " .. vim.trim(moved_pane) .. " '" .. cmd .. "' C-m")
     end
