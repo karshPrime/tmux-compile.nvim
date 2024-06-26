@@ -7,8 +7,6 @@ allowing customisation of build and run commands.
 Also supports running [lazygit](https://github.com/jesseduffield/lazygit) from
 within current Neovim session on an overlay terminal.
 
-⚠️ [Version 2 Backward Compatibility Broken](#important-notice-backward-compatibility) ⚠️
-
 ![preview](.media/screenshot.gif)
 
 ## Install & Setup
@@ -21,14 +19,17 @@ Install using your favorite plugin manager. For example, using
 And setup it with:
 ```lua
 require('tmux-compile').setup({
-    -- Overriding default configurations. [OPTIONAL]
-    save_session = false,             -- Save file before action
+    -- Overriding Default Configurations. [OPTIONAL]
+    save_session = false,             -- Save file before action (:wall)
+    build_run_window_title = "build", -- Tmux window name for Build/Run
+    ---- same window pane
+    new_pane_everytime = false,       -- Use existing side panes for action, when false
+    side_width_percent = 50,          -- Side pane width percentage
+    bottom_height_percent = 30,       -- Bottom pane height percentage
+    ---- overlay window
     overlay_sleep = 1,                -- Pause before overlay autoclose; seconds
     overlay_width_percent = 80,       -- Overlay width percentage
     overlay_height_percent = 80,      -- Overlay height percentage
-    build_run_window_title = "build", -- Tmux window name for Build/Run
-    side_width_percent = 50,          -- Side pane width percentage
-    bottom_height_percent = 30,       -- Bottom pane height percentage
 
     -- Languages' Run and Build actions.  [REQUIRED]
     build_run_config = {
