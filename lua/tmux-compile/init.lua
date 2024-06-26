@@ -109,7 +109,24 @@ end
 
 -- run command in same window on a new pane
 local function split_window(cmd, side, error_name)
-    execute_tmux_cmd(cmd, error_name, "silent !tmux split-window " .. side)
+    local direction_lookup = {
+        v = "-D",
+        h = "-R"
+    }
+
+    local current_pane = vim.fn.system("tmux display-message -p '#{pane_id}'")
+    vim.fn.system("tmux select-pane " .. direction_lookup[side])
+    local moved_pane = vim.fn.system("tmux display-message -p '#{pane_id}'")
+
+    print(vim.trim(current_pane) == vim.trim(moved_pane))
+
+    if (vim.trim(current_pane) == vim.trim(moved_pane)) then
+        vim.fn.system("tmux split-window -" .. side)
+        local new_pane = vim.fn.system("tmux display-message -p '#{pane_id}'")
+        vim.fn.system("tmux send -t " .. vim.trim(new_pane) .. " '" .. cmd .. "' C-m")
+    else
+        vim.fn.system("tmux send -t " .. vim.trim(moved_pane) .. " '" .. cmd .. "' C-m")
+    end
 end
 
 -- run lazygit in an overlay pane
@@ -145,16 +162,16 @@ function M.dispatch(option)
     local commands = {
         lazygit = lazygit,
         Run = function() overlay(run, M.config.overlay_sleep, "Run") end,
-        RunV = function() split_window(run, "-v", "Run") end,
-        RunH = function() split_window(run, "-h", "Run") end,
+        RunV = function() split_window(run, "v", "Run") end,
+        RunH = function() split_window(run, "h", "Run") end,
         RunBG = function() new_window(run, "Run") end,
         Make = function() overlay(make, M.config.overlay_sleep, "Make") end,
-        MakeV = function() split_window(make, "-v", "Make") end,
-        MakeH = function() split_window(make, "-h", "Make") end,
+        MakeV = function() split_window(make, "v", "Make") end,
+        MakeH = function() split_window(make, "h", "Make") end,
         MakeBG = function() new_window(make, "Make") end,
         Debug = function() overlay(debug, M.config.overlay_sleep, "Debug") end,
-        DebugV = function() split_window(debug, "-v", "Debug") end,
-        DebugH = function() split_window(debug, "-h", "Debug") end,
+        DebugV = function() split_window(debug, "v", "Debug") end,
+        DebugH = function() split_window(debug, "h", "Debug") end,
         DebugBG = function() new_window(debug, "Debug") end
     }
 
@@ -181,4 +198,5 @@ end, {
 })
 
 return M
+
 
