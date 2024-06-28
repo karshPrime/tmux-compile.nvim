@@ -66,11 +66,11 @@ local function change_dir(pane)
     local proj_dir = vim.fn.trim(vim.fn.system("pwd"))
     local win_dir = vim.fn.trim(vim.fn.system("tmux display -p -t " .. pane .. " '#{pane_current_path}'"))
 
-    if win_dir ~= proj_dir then
-        return "cd " .. proj_dir .. "; "
+    if (win_dir == proj_dir) or (win_dir == ("/private"..proj_dir)) then
+        return ""
     end
 
-    return ""
+    return "cd " .. proj_dir .. "; "
 end
 
 
