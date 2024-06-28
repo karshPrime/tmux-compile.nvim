@@ -53,7 +53,7 @@ require('tmux-compile').setup({
             -- missing
         }
     }
-}},
+})
 ```
 
 ## Keybinds
