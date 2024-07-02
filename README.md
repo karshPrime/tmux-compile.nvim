@@ -1,8 +1,11 @@
 # tmux-compile.nvim
 
 Neovim plugin designed to simplify the process of compiling and running projects
-within tmux panes or windows. Supports multiple programming languages by
+within TMUX panes or windows. Supports multiple programming languages by
 allowing customisation of build and run commands.
+
+Should nvim session be not running in TMUX, plugin will instead use vim's
+inbuilt `:term`. \* Configs avaliable to make this the default behaviour.
 
 Also supports running [lazygit](https://github.com/jesseduffield/lazygit) from
 within current Neovim session on an overlay terminal.
@@ -30,6 +33,8 @@ require('tmux-compile').setup({
     overlay_sleep = 1,                -- Pause before overlay autoclose; seconds
     overlay_width_percent = 80,       -- Overlay width percentage
     overlay_height_percent = 80,      -- Overlay height percentage
+    ---- using vim terminal over TMUX
+    always_term = false,              -- Always use :term even under TMUX
 
     -- Languages' Run and Build actions.  [REQUIRED]
     build_run_config = {
@@ -74,15 +79,15 @@ vim.keymap.set('n','<F5>', ':TMUXcompile Run<CR>', {silent=true})
 | Action / Purpose                                        | Command               |
 |---------------------------------------------------------|-----------------------|
 | Compile program in an overlay terminal window           | `:TMUXcompile Make`   |
-| Compile program in a new tmux window                    | `:TMUXcompile MakeBG` |
+| Compile program in a new TMUX window                    | `:TMUXcompile MakeBG` |
 | Compile program in a new pane next to current nvim pane | `:TMUXcompile MakeV`  |
 | Compile program in a new pane bellow current nvim pane  | `:TMUXcompile MakeH`  |
 | Run program in an overlay terminal window               | `:TMUXcompile Run`    |
-| Run program in a tmux new window                        | `:TMUXcompile RunBG`  |
+| Run program in a TMUX new window                        | `:TMUXcompile RunBG`  |
 | Run program in a new pane next to current nvim pane     | `:TMUXcompile RunV`   |
 | Run program in a new pane bellow current nvim pane      | `:TMUXcompile RunH`   |
 | Start debugger in an overlay terminal window            | `:TMUXcompile Debug`  |
-| Start debugger in a tmux new window                     | `:TMUXcompile DebugBG`|
+| Start debugger in a TMUX new window                     | `:TMUXcompile DebugBG`|
 | Start debugger in a new pane next to current nvim pane  | `:TMUXcompile DebugV` |
 | Start debugger in a new pane bellow current nvim pane   | `:TMUXcompile DebugH` |
 | Open lazygit in overlay                                 | `:TMUXcompile lazygit`|
