@@ -41,7 +41,12 @@ end
 -- get the file extension
 local function get_file_extension()
     local filename = vim.api.nvim_buf_get_name(0)
-    return filename:match("^.+(%..+)$"):sub(2)
+    local ext = filename:match("^.+(%..+)$")
+    if ext then
+        return ext:sub(2)
+    else
+        return "No Extension"
+    end
 end
 
 -- get build, run & debug commands based on file extension
@@ -51,7 +56,6 @@ local function get_commands_for_extension(extension)
             return cfg.build, cfg.run, cfg.debug
         end
     end
-    print("Error: No build and run commands found for this extension")
     return nil, nil, nil
 end
 
@@ -80,7 +84,7 @@ end
 local function new_window(cmd, error_name)
     if not cmd then
         local extension = get_file_extension()
-        print("Error: " .. error_name .. " command not found for " .. extension)
+        print("Error: " .. error_name .. " command not found for ." .. extension)
         return 1
     end
 
@@ -99,7 +103,7 @@ end
 local function overlay(cmd, sleep_duration, error_name)
     if not cmd then
         local extension = get_file_extension()
-        print("Error: " .. error_name .. " command not found for " .. extension)
+        print("Error: " .. error_name .. " command not found for ." .. extension)
         return 1
     end
 
@@ -117,7 +121,7 @@ end
 local function split_window(cmd, side, error_name)
     if not cmd then
         local extension = get_file_extension()
-        print("Error: " .. error_name .. " command not found for " .. extension)
+        print("Error: " .. error_name .. " command not found for ." .. extension)
         return 1
     end
 
