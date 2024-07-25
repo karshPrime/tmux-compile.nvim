@@ -8,6 +8,8 @@ Also supports running [lazygit](https://github.com/jesseduffield/lazygit) from
 within current Neovim session on an overlay terminal.
 
 ![preview](.media/screenshot.gif)
+<br>
+[editor theme above](https://github.com/karshPrime/tokyoburn.nvim)
 
 ## Install & Setup
 
