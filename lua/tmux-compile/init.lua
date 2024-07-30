@@ -146,6 +146,9 @@ local function split_window(cmd, side, error_name)
         cmd = change_dir(vim.trim(moved_pane)) .. cmd
         vim.fn.system("tmux send -t " .. vim.trim(moved_pane) .. " '" .. cmd .. "' C-m")
     end
+
+	-- return to nvim pane
+	vim.fn.system("tmux select-pane -l")
 end
 
 -- run lazygit in an overlay pane
