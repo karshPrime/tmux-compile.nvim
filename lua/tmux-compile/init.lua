@@ -10,7 +10,7 @@ M.config = {
     new_pane_everytime = false,
     side_width_percent = 50,
     bottom_height_percent = 30,
-    overlay_sleep = 1,
+    overlay_sleep = -1,
     overlay_width_percent = 80,
     overlay_height_percent = 80,
     build_run_config = {}
@@ -112,7 +112,12 @@ local function overlay(cmd, sleep_duration, error_name)
 
     local dimensions = " -w " .. M.config.overlay_width_percent .. "\\% -h " .. M.config.overlay_height_percent .. "\\% '"
 
-    local sleep = "; sleep " .. sleep_duration .. "'"
+	local sleep
+	if sleep_duration < 0 then
+		sleep = "; eval $SHELL '" 
+	else
+		sleep = "; sleep " .. sleep_duration .. "'"
+	end
 
     vim.fn.system(cmd_head .. dimensions .. cmd .. sleep)
 end

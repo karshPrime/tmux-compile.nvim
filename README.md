@@ -29,9 +29,11 @@ require('tmux-compile').setup({
     side_width_percent = 50,          -- Side pane width percentage
     bottom_height_percent = 30,       -- Bottom pane height percentage
     ---- overlay window
-    overlay_sleep = 1,                -- Pause before overlay autoclose; seconds
     overlay_width_percent = 80,       -- Overlay width percentage
     overlay_height_percent = 80,      -- Overlay height percentage
+    overlay_sleep = 1,                -- Pause before overlay autoclose; seconds
+                                      -- By default it sets value to -1,
+                                      -- indicating not to autoclose overlay
 
     -- Languages' Run and Build actions.  [REQUIRED]
     build_run_config = {
