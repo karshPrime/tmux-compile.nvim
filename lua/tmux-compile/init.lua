@@ -114,7 +114,7 @@ local function overlay(cmd, sleep_duration, error_name)
 
 	local sleep
 	if sleep_duration < 0 then
-		sleep = "; eval $SHELL '" 
+		sleep = "; read'"
 	else
 		sleep = "; sleep " .. sleep_duration .. "'"
 	end
