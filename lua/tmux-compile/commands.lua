@@ -3,7 +3,7 @@
 
 local Actions = require( "tmux-compile.actions" )
 local Helpers = require( "tmux-compile.helpers" )
-local Env = require( "tmux-compile.env" )
+local Env     = require( "tmux-compile.env" )
 
 local Commands = {}
 
@@ -26,37 +26,74 @@ function Commands.dispatch( aOption, aConfig )
 
     local lExtension = Helpers.get_file_extension()
     local lMake, lRun, lDebug = Helpers.get_commands_for_extension( lExtension, aConfig )
-    local lEveryTime = aConfig.new_pane_everytime
-    local lBHeight = aConfig.bottom_height_percent
-    local lSWidth  = aConfig.side_width_percent
-    local lOHeight = aConfig.overlay_height_percent
-    local lOWidth  = aConfig.overlay_width_percent
 
-    local lCommands = {
-        Run   = function() Actions.overlay( lRun, aConfig.overlay_sleep, lOWidth, lOHeight, "Run" ) end,
-        RunV  = function() Actions.split_window( lRun, "v", lSWidth, lBHeight, lEveryTime,  "Run" ) end,
-        RunH  = function() Actions.split_window( lRun, "h", lSWidth, lBHeight, lEveryTime,  "Run" ) end,
-        RunBG = function() Actions.new_window( lRun, aConfig.build_run_window_title, "Run" ) end,
-
-        Make   = function() Actions.overlay( lMake, aConfig.overlay_sleep, lOWidth, lOHeight, "Make" ) end,
-        MakeV  = function() Actions.split_window( lMake, "v", lSWidth, lBHeight, lEveryTime, "Make"  ) end,
-        MakeH  = function() Actions.split_window( lMake, "h", lSWidth, lBHeight, lEveryTime, "Make"  ) end,
-        MakeBG = function() Actions.new_window( lMake, aConfig.build_run_window_title, "Make" ) end,
-
-        Debug   = function() Actions.overlay( lDebug, aConfig.overlay_sleep, lOWidth, lOHeight, "Debug" ) end,
-        DebugV  = function() Actions.split_window( lDebug, "v", lSWidth, lBHeight, lEveryTime, "Debug"  ) end,
-        DebugH  = function() Actions.split_window( lDebug, "h", lSWidth, lBHeight, lEveryTime, "Debug"  ) end,
-        DebugBG = function() Actions.new_window( lDebug, aConfig.build_run_window_title, "Debug" ) end,
-
-        lazygit = function() Actions.lazygit( lOWidth, lOHeight ) end
+    local commands = {
+        Run   = { command = lRun,   title = "Run"   },
+        Make  = { command = lMake,  title = "Make"  },
+        Debug = { command = lDebug, title = "Debug" }
     }
 
-    if lCommands[aOption] then
-        lCommands[aOption]()
+    local function execute_command( cmd, lOrientation, lBackground )
+        local lCommandInfo = commands[cmd]
+        if not lCommandInfo then
+            print("Error: Invalid aOption.")
+            return
+        end
+
+        local action = lBackground and Actions.new_window or Actions.overlay
+        if lOrientation then
+            action = Actions.split_window
+        end
+
+        if lBackground then
+            action(
+                lCommandInfo.command,
+                aConfig.build_run_window_title,
+                lCommandInfo.title
+            )
+        elseif lOrientation then
+            action(
+                lCommandInfo.command,
+                lOrientation,
+                aConfig.side_width_percent,
+                aConfig.bottom_height_percent,
+                aConfig.new_pane_everytime,
+                lCommandInfo.title
+            )
+        else
+            action(
+                lCommandInfo.command, 
+                aConfig.overlay_sleep,
+                aConfig.overlay_width_percent,
+                aConfig.overlay_height_percent,
+                lCommandInfo.title
+            )
+        end
+    end
+
+    if aOption == "lazygit" then
+        Actions.lazygit( aConfig.overlay_width_percent, aConfig.overlay_height_percent )
     else
-        print( "Error: Invalid aOption." )
+        local lOrientation = nil
+        local lBackground = false
+
+        if aOption:sub(-1) == "V" then
+            lOrientation = "v"
+            aOption = aOption:sub(1, -2)
+
+        elseif aOption:sub(-1) == "H" then
+            lOrientation = "h"
+            aOption = aOption:sub(1, -2)
+
+        elseif aOption:sub(-2) == "BG" then
+            lBackground = true
+            aOption = aOption:sub(1, -3)
+        end
+
+        execute_command( aOption, lOrientation, lBackground )
     end
 end
 
 return Commands
+
 
