@@ -20,7 +20,11 @@ function Actions.new_window( aCmd, aWindowTitle, aErrorName )
 
         vim.fn.system( "tmux selectw -t " .. aWindowName .. " \\; send-keys '" .. aCmd .. "' C-m" )
     else
-        vim.fn.system( "tmux neww -n " .. aWindowName .. " '" .. aCmd .. "; zsh'" )
+        local lProjectDir = vim.fn.trim(
+            vim.fn.system("git rev-parse --show-toplevel 2>/dev/null || pwd")
+        ) .. " -n "
+
+        vim.fn.system( "tmux neww -c " .. lProjectDir .. aWindowName .. " '" .. aCmd .. "; zsh'")
     end
 end
 
@@ -35,7 +39,10 @@ function Actions.overlay( aCmd, aSleepDuration, aWidth, aHeight, aErrorName )
         return 1
     end
 
-    local lProjectDir = vim.fn.trim( vim.fn.system("pwd") )
+    local lProjectDir = vim.fn.trim(
+        vim.fn.system("git rev-parse --show-toplevel 2>/dev/null || pwd")
+    )
+
     local aCmdHead    = "tmux display-popup -E -d" .. lProjectDir
     local lDimensions = " -w " .. aWidth .. "\\% -h " .. aHeight .. "\\% '"
 
@@ -74,11 +81,12 @@ function Actions.split_window( aCmd, aSide, aWidth, aHeight, aNewPane, aErrorNam
     vim.fn.system( "tmux selectp " .. lDirectionLookup[aSide] )
     local lMovedPane = vim.fn.system( "tmux display -p '#{pane_id}'" )
 
+    aCmd = Helpers.change_dir( vim.trim(lMovedPane) ) .. aCmd
+
     if ( vim.trim(lCurrentPane) == vim.trim(lMovedPane) or aNewPane ) then
         local lParameters = aSide .. " -l " .. lLengthPercentage[aSide] .. "%"
         vim.fn.system("tmux splitw -" .. lParameters .. " '" .. aCmd .. "; zsh'")
     else
-        aCmd = Helpers.change_dir( vim.trim(lMovedPane) ) .. aCmd
         vim.fn.system( "tmux send -t " .. vim.trim(lMovedPane) .. " '" .. aCmd .. "' C-m" )
     end
 

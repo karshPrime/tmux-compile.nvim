@@ -1,4 +1,6 @@
 
+-- Helpers.Lua
+
 local Helpers = {}
 
 --
@@ -36,7 +38,10 @@ end
 --
 -- change directory if not same as project
 function Helpers.change_dir( aPane )
-    local lProjectDir = vim.fn.trim( vim.fn.system("pwd") )
+    local lProjectDir = vim.fn.trim(
+        vim.fn.system("git rev-parse --show-toplevel 2>/dev/null || pwd")
+    )
+    print(lProjectDir)
 
     local lWindowDir = vim.fn.trim(
         vim.fn.system( "tmux display -p -t " .. aPane .. " '#{pane_current_path}'" )
