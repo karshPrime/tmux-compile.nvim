@@ -1,31 +1,24 @@
 
 -- Commands.Lua
 
-local Actions = require( "tmux-compile.actions" )
-local Helpers = require( "tmux-compile.helpers" )
-local Env     = require( "tmux-compile.env" )
-
+local Env = require( "tmux-compile.env" )
 local Commands = {}
 
 --
 -- commands dispatch
 function Commands.dispatch( aOption, aConfig )
-    if not Env.is_tmux_installed() then
-        print( "Error: install TMUX to use the plugin" )
-        return 1
-    end
-
-    if not Env.is_tmux_running() then
-        print( "Error: run session in TMUX" )
-        return 1
+    if Env.is_tmux_running() then
+        Actions = require( "tmux-compile.TmuxActions" )
+    else
+        Actions = require( "tmux-compile.TermActions" )
     end
 
     if aConfig.save_session then
         vim.cmd( ":wall" )
     end
 
-    local lExtension = Helpers.get_file_extension()
-    local lMake, lRun, lDebug = Helpers.get_commands_for_extension( lExtension, aConfig )
+    local lExtension = Env.get_file_extension()
+    local lMake, lRun, lDebug = Env.get_commands_for_extension( lExtension, aConfig )
 
     local commands = {
         Run   = { command = lRun,   title = "Run"   },
@@ -72,7 +65,14 @@ function Commands.dispatch( aOption, aConfig )
     end
 
     if aOption == "lazygit" then
-        Actions.lazygit( aConfig.overlay_width_percent, aConfig.overlay_height_percent )
+        if vim.fn.executable( "lazygit" ) == 1 then
+            Actions.overlay(
+                "lazygit", 0, aConfig.overlay_width_percent, aConfig.overlay_height_percent, ""
+            )
+        else
+            print( "Error: lazygit not installed." )
+        end
+
     else
         local lOrientation = nil
         local lBackground = false
@@ -95,5 +95,4 @@ function Commands.dispatch( aOption, aConfig )
 end
 
 return Commands
-
 

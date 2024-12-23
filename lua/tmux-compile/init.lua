@@ -1,7 +1,7 @@
 
 -- init.lua
 
-local Commands = require( "tmux-compile.commands" )
+local Commands = require( "tmux-compile.Commands" )
 
 local M = {}
 M.config = {

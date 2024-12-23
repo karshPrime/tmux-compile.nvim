@@ -1,7 +1,8 @@
 
--- Actions.Lua
+-- TermActions.Lua
 
-local Helpers = require( "tmux-compile.helpers" )
+local Helpers = require( "tmux-compile.TmuxHelpers" )
+local Env = require( "tmux-compile.Env" )
 
 local Actions = {}
 
@@ -9,7 +10,7 @@ local Actions = {}
 -- run command in a new or existing tmux window
 function Actions.new_window( aCmd, aWindowTitle, aErrorName )
     if not aCmd then
-        local lExtension = Helpers.get_file_extension()
+        local lExtension = Env.get_file_extension()
         print( "Error: " .. aErrorName .. " command not found for ." .. lExtension )
 
         return 1
@@ -33,7 +34,7 @@ end
 -- run command in an overlay pane
 function Actions.overlay( aCmd, aSleepDuration, aWidth, aHeight, aErrorName )
     if not aCmd then
-        local lExtension = Helpers.get_file_extension()
+        local lExtension = Env.get_file_extension()
         print( "Error: " .. aErrorName .. " command not found for ." .. lExtension )
 
         return 1
@@ -61,7 +62,7 @@ end
 -- run command in same window on a new pane
 function Actions.split_window( aCmd, aSide, aWidth, aHeight, aNewPane, aErrorName )
     if not aCmd then
-        local lExtension = Helpers.get_file_extension()
+        local lExtension = Env.get_file_extension()
         print( "Error: " .. aErrorName .. " command not found for ." .. lExtension )
 
         return 1
@@ -92,17 +93,6 @@ function Actions.split_window( aCmd, aSide, aWidth, aHeight, aNewPane, aErrorNam
 
 	-- return to nvim pane
 	vim.fn.system( "tmux select-pane -l" )
-end
-
-
---
--- run lazygit in an overlay pane
-function Actions.lazygit( aWidth, aHeight )
-    if vim.fn.executable( "lazygit" ) == 1 then
-        Actions.overlay( "lazygit", 0, aWidth, aHeight, aErrorName  )
-    else
-        print( "Error: lazygit not installed." )
-    end
 end
 
 
