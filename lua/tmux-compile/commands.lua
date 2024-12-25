@@ -7,10 +7,10 @@ local Commands = {}
 --
 -- commands dispatch
 function Commands.dispatch( aOption, aConfig )
-    if Env.is_tmux_running() then
-        Actions = require( "tmux-compile.TmuxActions" )
-    else
+    if Env.tmux_not_running() or aConfig.always_term then
         Actions = require( "tmux-compile.TermActions" )
+    else
+        Actions = require( "tmux-compile.TmuxActions" )
     end
 
     if aConfig.save_session then

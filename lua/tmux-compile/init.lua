@@ -6,6 +6,7 @@ local Commands = require( "tmux-compile.Commands" )
 local M = {}
 M.config = {
     save_session = false,
+    always_term = false,
     build_run_window_title = "build",
     new_pane_everytime = false,
     side_width_percent = 50,
