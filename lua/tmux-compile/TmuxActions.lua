@@ -22,13 +22,12 @@ function Actions.new_window( aCmd, aWindowTitle, aErrorName )
         vim.fn.system( "tmux selectw -t " .. aWindowName .. " \\; send-keys '" .. aCmd .. "' C-m" )
     else
         local lProjectDir = vim.fn.trim(
-            vim.fn.system("git rev-parse --show-toplevel 2>/dev/null || pwd")
+            vim.fn.system( "git rev-parse --show-toplevel 2>/dev/null || pwd" )
         ) .. " -n "
 
         vim.fn.system( "tmux neww -c " .. lProjectDir .. aWindowName .. " '" .. aCmd .. "; zsh'")
     end
 end
-
 
 --
 -- run command in an overlay pane
@@ -56,7 +55,6 @@ function Actions.overlay( aCmd, aSleepDuration, aWidth, aHeight, aErrorName )
 
     vim.fn.system( aCmdHead .. lDimensions .. aCmd .. lSleep )
 end
-
 
 --
 -- run command in same window on a new pane
@@ -94,7 +92,6 @@ function Actions.split_window( aCmd, aSide, aWidth, aHeight, aNewPane, aErrorNam
 	-- return to nvim pane
 	vim.fn.system( "tmux select-pane -l" )
 end
-
 
 return Actions
 

@@ -39,12 +39,14 @@ function Commands.dispatch( aOption, aConfig )
         end
 
         if lBackground then
+            -- new window
             action(
                 lCommandInfo.command,
                 aConfig.build_run_window_title,
                 lCommandInfo.title
             )
         elseif lOrientation then
+            -- split pane
             action(
                 lCommandInfo.command,
                 lOrientation,
@@ -54,6 +56,7 @@ function Commands.dispatch( aOption, aConfig )
                 lCommandInfo.title
             )
         else
+            -- overlay
             action(
                 lCommandInfo.command, 
                 aConfig.overlay_sleep,

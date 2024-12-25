@@ -1,11 +1,14 @@
 # tmux-compile.nvim
 
-Neovim plugin designed to simplify the process of compiling and running projects
-within tmux panes or windows. Supports multiple programming languages by
-allowing customisation of build and run commands.
+Neovim plugin designed to simplify the process of compiling and running projects within tmux panes
+or windows. Supports multiple programming languages by allowing customisation of build and run
+commands.
 
-Also supports running [lazygit](https://github.com/jesseduffield/lazygit) from
-within current Neovim session on an overlay terminal.
+With v3.0 vim's `:term` is used when not in tmux session to get similar functionality with same
+keybinds as with tmux.
+
+Also supports running [lazygit](https://github.com/jesseduffield/lazygit) from within current Neovim
+session on an overlay terminal.
 
 ![preview](.media/screenshot.gif)
 <br>
@@ -15,6 +18,7 @@ within current Neovim session on an overlay terminal.
 
 Install using your favorite plugin manager. For example, using
 [lazy.nvim](https://github.com/folke/lazy.nvim):
+
 ```lua
 { 'karshPrime/tmux-compile.nvim', event = 'VeryLazy' },
 ```
@@ -22,6 +26,7 @@ And setup it with:
 ```lua
 require('tmux-compile').setup({
     -- Overriding Default Configurations. [OPTIONAL]
+    always_term = false,              -- Always use nvim :term instead of tmux panes
     save_session = false,             -- Save file before action (:wall)
     build_run_window_title = "build", -- Tmux window name for Build/Run
     ---- same window pane
@@ -96,13 +101,12 @@ run command specified for the file extension.
 
 
 ## Important Notice: Backward Compatibility Break
-Please note that backward compatibility is broken from Version 1 to Version 2
-due to the implementation of a more robust configuration system. In the previous
-version, user configuration consisted of a simple list of extensions with their
-associated make and run command properties. However, with the introduction of
-overlay functionality, it became necessary to add an identifier to this
-previously unnamed list, resulting in incompatibility with older configurations.
+Please note that backward compatibility is broken from Version 1 to Version 2 due to the
+implementation of a more robust configuration system. In the previous version, user configuration
+consisted of a simple list of extensions with their associated make and run command properties.
+However, with the introduction of overlay functionality, it became necessary to add an identifier to
+this previously unnamed list, resulting in incompatibility with older configurations.
 
-Apologies for any inconvenience this may cause. From version 2, the plugin has been
-designed with future-proofing in mind to ensure that such issues do not recur.
+Apologies for any inconvenience this may cause. From version 2, the plugin has been designed with
+future-proofing in mind to ensure that such issues do not recur.
 
