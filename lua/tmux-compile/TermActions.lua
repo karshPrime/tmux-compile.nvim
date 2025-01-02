@@ -16,19 +16,17 @@ function Actions.new_window( aCmd, aWindowTitle, aErrorName )
         return 1
     end
 
+    -- vim.cmd( "term " .. aCmd )
+    -- vim.wo.scrolloff = 0
+    -- vim.wo.sidescrolloff = 0
+    -- vim.wo.number = false
+    -- vim.wo.relativenumber = false
 end
-
 
 --
 -- run command in an overlay pane
 function Actions.overlay( aCmd, aSleepDuration, aWidth, aHeight, aErrorName )
-    if not aCmd then
-        local lExtension = Env.get_file_extension()
-        print( "Error: " .. aErrorName .. " command not found for ." .. lExtension )
-
-        return 1
-    end
-
+    print( "Run session in tmux for overlay support" )
 end
 
 --
