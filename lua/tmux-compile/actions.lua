@@ -6,7 +6,7 @@ local Actions = {}
 
 --
 -- run command in a new or existing tmux window
-function Actions.new_window(aCmd, aWindowTitle, aErrorName)
+function Actions.new_window(aCmd, aWindowName, aErrorName)
     if not aCmd then
         local lExtension = Helpers.get_file_extension()
         print("Error: " .. aErrorName .. " command not found for ." .. lExtension)
@@ -14,7 +14,7 @@ function Actions.new_window(aCmd, aWindowTitle, aErrorName)
         return 1
     end
 
-    if tmux_window_exists(aWindowName) then
+    if Helpers.tmux_window_exists(aWindowName) then
         aCmd = Helpers.change_dir(aWindowName) .. aCmd
 
         vim.fn.system("tmux selectw -t " .. aWindowName .. " \\; send-keys '" .. aCmd .. "' C-m")
@@ -89,7 +89,7 @@ end
 
 --
 -- run lazygit in an overlay pane
-function Actions.lazygit(aWidth, aHeight)
+function Actions.lazygit(aWidth, aHeight, aErrorName)
     if vim.fn.executable("lazygit") == 1 then
         Actions.overlay("lazygit", 0, aWidth, aHeight, aErrorName)
     else
