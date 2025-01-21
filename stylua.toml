@@ -1,4 +1,2 @@
-[format]
-indent = 4
-line_width = 100
-quote_style = Auto
+indent_width = 4 
+quote_style = "AutoPreferDouble"
