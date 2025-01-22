@@ -56,14 +56,14 @@ require('tmux-compile').setup({
             -- but Build and Debug will return errors informing configs are
             -- missing
         }
-    }
+    },
 
     -- Directory override config. [OPTIONAL] 
-    -- If you want to set Run, Build and Debug actions for a specific directory (per project basis)
+    -- Set actions for a specific directory (per project basis)
     -- Note: do not use '~' for home directory, use full path
     project_override_config = {
         {
-            project_base_dir = '/path/to/project',
+            project_base_dir = '/absolute/path/to/project',
             build = 'make',
             run = 'make run',
             debug = 'lldb',
@@ -75,6 +75,7 @@ require('tmux-compile').setup({
         }
     }
 })
+
 ```
 
 ## Keybinds
@@ -111,15 +112,16 @@ vim.keymap.set('n','<F5>', ':TMUXcompile Run<CR>', {silent=true})
 \* **Run** here includes both compiling and running the program, depending on the
 run command specified for the file extension.
 
-
-## Important Notice: Backward Compatibility Break
+<details>
+<summary>Important Notice: Backward Compatibility Break v1 -> v2</summary>
 Please note that backward compatibility is broken from Version 1 to Version 2
 due to the implementation of a more robust configuration system. In the previous
 version, user configuration consisted of a simple list of extensions with their
 associated make and run command properties. However, with the introduction of
 overlay functionality, it became necessary to add an identifier to this
 previously unnamed list, resulting in incompatibility with older configurations.
-
+<br>
 Apologies for any inconvenience this may cause. From version 2, the plugin has been
 designed with future-proofing in mind to ensure that such issues do not recur.
+</details>
 
