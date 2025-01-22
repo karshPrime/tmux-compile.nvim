@@ -1,7 +1,6 @@
-
 -- init.lua
 
-local Commands = require( "tmux-compile.commands" )
+local Commands = require("tmux-compile.commands")
 
 local M = {}
 M.config = {
@@ -13,29 +12,37 @@ M.config = {
     overlay_sleep = -1,
     overlay_width_percent = 80,
     overlay_height_percent = 80,
-    build_run_config = {}
+    build_run_config = {},
 }
 
-function M.setup( aConfig )
-    for key, value in pairs( aConfig ) do
+function M.setup(aConfig)
+    for key, value in pairs(aConfig) do
         M.config[key] = value or M.config[key]
     end
 end
 
 -- nvim command integration
-vim.api.nvim_create_user_command( 'TMUXcompile', function(args)
-    Commands.dispatch( args.args, M.config )
+vim.api.nvim_create_user_command("TMUXcompile", function(args)
+    Commands.dispatch(args.args, M.config)
 end, {
     nargs = 1,
     complete = function()
         return {
             "lazygit",
-            "Run", "RunV", "RunH", "RunBG",
-            "Make", "MakeV", "MakeH", "MakeBG",
-            "Debug", "DebugV", "DebugH", "DebugBG"
+            "Run",
+            "RunV",
+            "RunH",
+            "RunBG",
+            "Make",
+            "MakeV",
+            "MakeH",
+            "MakeBG",
+            "Debug",
+            "DebugV",
+            "DebugH",
+            "DebugBG",
         }
     end,
 })
 
 return M
-

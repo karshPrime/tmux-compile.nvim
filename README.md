@@ -57,6 +57,23 @@ require('tmux-compile').setup({
             -- missing
         }
     }
+
+    -- Directory override config. [OPTIONAL] 
+    -- If you want to set Run, Build and Debug actions for a specific directory (per project basis)
+    -- Note: do not use '~' for home directory, use full path
+    project_override_config = {
+        {
+            project_base_dir = '/path/to/project',
+            build = 'make',
+            run = 'make run',
+            debug = 'lldb',
+        },
+        {
+            project_base_dir = '/path/to/another/project',
+            build = 'cargo build',
+            -- Only build will work for this path
+        }
+    }
 })
 ```
 

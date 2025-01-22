@@ -1,23 +1,48 @@
-
 -- Helpers.Lua
 
 local Helpers = {}
 
 --
--- get the file extension
-function Helpers.get_file_extension()
-    local lFilename = vim.api.nvim_buf_get_name( 0 )
-    local lExtension = lFilename:match( "^.+(%..+)$" )
+-- get matched directory override config if it exists
+function Helpers.get_matched_directory_override(aConfig)
+    for _, lConfig in ipairs(aConfig.project_override_config) do
+        local lFilename = vim.api.nvim_buf_get_name(0)
 
-    return lExtension and lExtension:sub( 2 ) or "No Extension"
+        if string.match(lFilename, "^" .. vim.pesc(lConfig.project_base_dir)) then
+            return lConfig
+        end
+    end
+
+    return nil
 end
 
+--
+-- get directory override config values
+function Helpers.get_directory_override_commands(aOverrideConfig)
+    local lProjectDir = aOverrideConfig.project_base_dir
+    local lFilename = vim.api.nvim_buf_get_name(0)
+
+    if string.find(lFilename, lProjectDir) then
+        return aOverrideConfig.build, aOverrideConfig.run, aOverrideConfig.debug
+    else
+        return nil, nil, nil
+    end
+end
+
+--
+-- get the file extension
+function Helpers.get_file_extension()
+    local lFilename = vim.api.nvim_buf_get_name(0)
+    local lExtension = lFilename:match("^.+(%..+)$")
+
+    return lExtension and lExtension:sub(2) or "No Extension"
+end
 
 --
 -- get build, run & debug commands based on file extension
-function Helpers.get_commands_for_extension( aExtension, aConfig )
-    for _, lConfig in ipairs( aConfig.build_run_config ) do
-        if vim.tbl_contains( lConfig.extension, aExtension ) then
+function Helpers.get_commands_for_extension(aExtension, aConfig)
+    for _, lConfig in ipairs(aConfig.build_run_config) do
+        if vim.tbl_contains(lConfig.extension, aExtension) then
             return lConfig.build, lConfig.run, lConfig.debug
         end
     end
@@ -25,35 +50,27 @@ function Helpers.get_commands_for_extension( aExtension, aConfig )
     return nil, nil, nil
 end
 
-
 --
 -- check if a tmux window with the given name exists
-function Helpers.tmux_window_exists( aWindowName )
-    local Result = vim.fn.system( "tmux list-windows | grep -w " .. aWindowName )
+function Helpers.tmux_window_exists(aWindowName)
+    local Result = vim.fn.system("tmux list-windows | grep -w " .. aWindowName)
 
     return Result ~= ""
 end
 
-
 --
 -- change directory if not same as project
-function Helpers.change_dir( aPane )
-    local lProjectDir = vim.fn.trim(
-        vim.fn.system("git rev-parse --show-toplevel 2>/dev/null || pwd")
-    )
+function Helpers.change_dir(aPane)
+    local lProjectDir = vim.fn.trim(vim.fn.system("git rev-parse --show-toplevel 2>/dev/null || pwd"))
     print(lProjectDir)
 
-    local lWindowDir = vim.fn.trim(
-        vim.fn.system( "tmux display -p -t " .. aPane .. " '#{pane_current_path}'" )
-    )
+    local lWindowDir = vim.fn.trim(vim.fn.system("tmux display -p -t " .. aPane .. " '#{pane_current_path}'"))
 
-    if lWindowDir == lProjectDir or lWindowDir == ( "/private" .. lProjectDir ) then
+    if lWindowDir == lProjectDir or lWindowDir == ("/private" .. lProjectDir) then
         return ""
     end
 
     return "cd " .. lProjectDir .. "; "
 end
 
-
 return Helpers
-
