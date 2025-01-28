@@ -40,13 +40,13 @@ require('tmux-compile').setup({
         {
             extension = {'c', 'cpp', 'h'},
             build = 'make',
-            run = 'make run',
+            run   = 'make run',
             debug = 'lldb',
         },
         {
             extension = {'rs'},
             build = 'cargo build',
-            run = 'cargo run',
+            run   = 'cargo run',
             -- not all properties are required for all extensions
         },
         {
@@ -65,7 +65,7 @@ require('tmux-compile').setup({
         {
             project_base_dir = '/absolute/path/to/project',
             build = 'make',
-            run = 'make run',
+            run   = 'make run',
             debug = 'lldb',
         },
         {
