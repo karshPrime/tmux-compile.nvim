@@ -6,10 +6,17 @@ local Helpers = {}
 --
 -- get matched directory override config if it exists
 function Helpers.get_matched_directory_override( aConfig )
-    for _, lConfig in ipairs( aConfig.project_override_config ) do
-        local lFilename = vim.api.nvim_buf_get_name( 0 )
+    local lFilename = vim.api.nvim_buf_get_name( 0 )
+    local lHomeDir  = os.getenv("HOME")
 
-        if string.match( lFilename, "^" .. vim.pesc(lConfig.project_base_dir) ) then
+    for _, lConfig in ipairs( aConfig.project_override_config ) do
+        local lConfigDir = lConfig.project_base_dir
+
+        if lConfigDir:sub(1, 1) == "~" then
+            lConfigDir = lHomeDir .. lConfigDir:sub(2)
+        end
+
+        if string.match( lFilename, "^" .. vim.pesc(lConfigDir) ) then
             return lConfig
         end
     end

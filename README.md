@@ -60,7 +60,6 @@ require('tmux-compile').setup({
 
     -- Directory override config. [OPTIONAL] 
     -- Set actions for a specific directory (per project basis)
-    -- Note: do not use '~' for home directory, use full path
     project_override_config = {
         {
             project_base_dir = '/absolute/path/to/project',
@@ -69,8 +68,9 @@ require('tmux-compile').setup({
             debug = 'lldb',
         },
         {
-            project_base_dir = '/path/to/another/project',
-            build = 'cargo build',
+            project_base_dir = '~/Projects/ESP32/',
+            build = 'idf.py build',
+            run   = 'idf.py flash /dev/cu.usbmodem1101'
             -- Only build will work for this path
         }
     }
