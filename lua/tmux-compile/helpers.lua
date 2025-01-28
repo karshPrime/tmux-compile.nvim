@@ -32,7 +32,7 @@ function Helpers.get_directory_override_commands( aOverrideConfig )
 
     if string.find( lFilename, lProjectDir ) then
         return aOverrideConfig.build, aOverrideConfig.run, aOverrideConfig.debug
-    els e
+    else
         return nil, nil, nil
     end
 end
