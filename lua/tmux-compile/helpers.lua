@@ -41,9 +41,13 @@ end
 -- get the file extension
 function Helpers.get_file_extension()
     local lFilename  = vim.api.nvim_buf_get_name( 0 )
-    local lExtension = lFilename:match( "^.+( %..+ )$" )
+    local lExtension = lFilename:match("^.+(%..-)$")
 
-    return lExtension and lExtension:sub( 2 ) or "No Extension"
+    if lExtension then
+        return lExtension:sub(2)
+    end
+
+    return "No Extension"
 end
 
 --
