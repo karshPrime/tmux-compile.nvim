@@ -9,7 +9,7 @@ local Actions = {}
 function Actions.new_window(aCmd, aWindowName, aErrorName)
     if not aCmd then
         local lExtension = Helpers.get_file_extension()
-        print("Error: " .. aErrorName .. " command not found for ." .. lExtension)
+        vim.notify("Error: " .. aErrorName .. " command not found for ." .. lExtension, vim.log.levels.ERROR)
 
         return 1
     end
@@ -30,7 +30,7 @@ end
 function Actions.overlay(aCmd, aSleepDuration, aWidth, aHeight, aErrorName)
     if not aCmd then
         local lExtension = Helpers.get_file_extension()
-        print("Error: " .. aErrorName .. " command not found for ." .. lExtension)
+        vim.notify("Error: " .. aErrorName .. " command not found for ." .. lExtension, vim.log.levels.ERROR)
 
         return 1
     end
@@ -55,7 +55,7 @@ end
 function Actions.split_window(aCmd, aSide, aWidth, aHeight, aNewPane, aErrorName)
     if not aCmd then
         local lExtension = Helpers.get_file_extension()
-        print("Error: " .. aErrorName .. " command not found for ." .. lExtension)
+        vim.notify("Error: " .. aErrorName .. " command not found for ." .. lExtension, vim.log.levels.ERROR)
 
         return 1
     end
@@ -93,7 +93,7 @@ function Actions.yazi(aWidth, aHeight, aErrorName)
     if vim.fn.executable("yazi") == 1 then
         Actions.overlay("yazi", 0, aWidth, aHeight, aErrorName)
     else
-        print("Error: yazi not installed.")
+        vim.notify("Error: yazi not installed.", vim.log.levels.ERROR)
     end
 end
 --
@@ -102,7 +102,7 @@ function Actions.lazygit(aWidth, aHeight, aErrorName)
     if vim.fn.executable("lazygit") == 1 then
         Actions.overlay("lazygit", 0, aWidth, aHeight, aErrorName)
     else
-        print("Error: lazygit not installed.")
+        vim.notify("Error: lazygit not installed.", vim.log.levels.ERROR)
     end
 end
 
