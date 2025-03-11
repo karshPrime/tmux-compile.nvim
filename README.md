@@ -77,34 +77,40 @@ require('tmux-compile').setup({
             -- Only build will work for this path
         }
     }
-
-
-    -- Defining project overrides locally.
-    -- Along with the previously defined 'project_override_config' it is also possible to define build/run/debug actions
-    -- locally inside the project working directory.
-    -- The plugin will look for a configuratino file called 'tmux-compile.lua' inside the following directories
-    -- RELATIVE to the vim current owrking directory:
-    -- ./.nvim/
-    -- ./nvim/
-    -- ./
-    -- example tmux-compile.lua file
-
-    return {
-        build = "make",
-        run = "make run"
-    }
-
-    -- IMPORTANT: configuration precedence
-    -- When starting, this plugin will load and apply the build/run/debug commands in the following order
-
-    -- 1. tmux-compile.lua
-    -- 2. project_override_config
-    -- 3. build_run_config
-
-    -- If there is no tmux-compile.lua file defined in the current working directory, the plugin will load the commands from the 'project_override_config' table inside the main config. If that is also not defined for the current working directory, then the plugin will default to the commands defined by the file extension of the current buffer
 })
-
 ```
+
+### Defining project overrides locally.
+Along with the previously defined 'project_override_config' it is also possible to define
+build/run/debug actions locally inside the project working directory.
+The plugin will look for a configuratino file called 'tmux-compile.lua' inside the following
+directories RELATIVE to the vim current owrking directory:
+```
+./.nvim/
+./nvim/
+./
+```
+
+Example `tmux-compile.lua` file
+```lua
+return {
+    build = "make",
+    run = "make run"
+}
+```
+
+#### IMPORTANT: configuration precedence
+When starting, this plugin will load and apply the build/run/debug commands in the following order:
+1. tmux-compile.lua
+2. project_override_config
+3. build_run_config
+
+If there is no `tmux-compile.lua` file defined in the current working directory, the plugin will load
+the commands from the 'project_override_config' table inside the main config. If that is also not
+defined for the current working directory, then the plugin will default to the commands defined by
+the file extension of the current buffer
+
+
 
 ## Keybinds
 
@@ -154,3 +160,4 @@ previously unnamed list, resulting in incompatibility with older configurations.
 Apologies for any inconvenience this may cause. From version 2, the plugin has been
 designed with future-proofing in mind to ensure that such issues do not recur.
 </details>
+
