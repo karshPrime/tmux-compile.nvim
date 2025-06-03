@@ -4,13 +4,12 @@ local Helpers = {}
 
 --
 -- search for directory override config in project directory
-function Helpers.search_project_defined_override_config(notify_missing_config)
+function Helpers.search_project_defined_override_config(notify_missing_config, config_name)
     local lCwd = vim.fn.getcwd()
-    local lFileName = "tmux-compile.lua"
     local lPathsToSearch = { "/.nvim", "/nvim", "" }
 
     for _, lPath in ipairs(lPathsToSearch) do
-        local lFullPath = lCwd .. lPath .. "/" .. lFileName
+        local lFullPath = lCwd .. lPath .. "/" .. config_name
 
         if vim.fn.filereadable(lFullPath) == 1 then
             vim.notify("Found TmuxCompile config file at " .. lFullPath, vim.log.levels.INFO)
@@ -25,7 +24,7 @@ function Helpers.search_project_defined_override_config(notify_missing_config)
     end
 
     local lPathsSearched = vim.tbl_map(function(aPath)
-        return lCwd .. aPath .. "/" .. lFileName
+        return lCwd .. aPath .. "/" .. config_name
     end, lPathsToSearch)
 
     if notify_missing_config then

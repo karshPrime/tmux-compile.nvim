@@ -1,15 +1,20 @@
 # tmux-compile.nvim
 
-Neovim plugin designed to simplify the process of compiling and running projects
-within tmux panes or windows. Supports multiple programming languages by
-allowing customisation of build and run commands.
+Neovim plugin designed to simplify the process of compiling and running projects within tmux panes
+or windows. Supports multiple programming languages by allowing customisation of build and run
+commands.
 
-Also supports running [lazygit](https://github.com/jesseduffield/lazygit) from
-within current Neovim session on an overlay terminal.
+Also supports running [lazygit](https://github.com/jesseduffield/lazygit) from within current Neovim
+session on an overlay terminal.
 
 ![preview](.media/screenshot.gif)
 <br>
 [editor theme above](https://github.com/karshPrime/tokyoburn.nvim)
+
+Also, take a look at **[karshPrime/gun](https://github.com/karshPrime/gun)**, a Go command-line tool
+that provides the same powerful build configurations as this plugin. It includes additional tools,
+such as one for defining project initialisation actions, to help manage multiple programming
+languages and platforms more easily. It also uses the same local config as this plugin.
 
 ## Install & Setup
 
@@ -27,6 +32,7 @@ require('tmux-compile').setup({
     -- Overriding Default Configurations. [OPTIONAL]
     save_session = false,             -- Save file before action (:wall)
     build_run_window_title = "build", -- Tmux window name for Build/Run
+    local_config = "tmux-compile.lua",-- Set local commands file name
     ---- same window pane
     new_pane_everytime = false,       -- Use existing side panes for action, when false
     side_width_percent = 50,          -- Side pane width percentage
@@ -61,8 +67,7 @@ require('tmux-compile').setup({
         }
     },
 
-    -- Directory override config. [OPTIONAL]
-    -- Set actions for a specific directory (per project basis)
+    -- Directory override config. [OPTIONAL] -- Set actions for a specific directory (per project basis)
     project_override_config = {
         {
             project_base_dir = '/absolute/path/to/project',
@@ -81,10 +86,11 @@ require('tmux-compile').setup({
 ```
 
 ### Defining project overrides locally.
-Along with the previously defined 'project_override_config' it is also possible to define
+Along with the previously defined `project_override_config` it is also possible to define
 build/run/debug actions locally inside the project working directory.
-The plugin will look for a configuratino file called 'tmux-compile.lua' inside the following
-directories RELATIVE to the vim current owrking directory:
+<br>
+The plugin will look for a configuratino file called `tmux-compile.lua` (by default), or the set
+`local_config` value inside the following directories RELATIVE to the vim current owrking directory:
 ```
 ./.nvim/
 ./nvim/
@@ -99,16 +105,19 @@ return {
 }
 ```
 
+**Note:** `local_config` can be set to anything, including just `"commands"`. `.lua` file extension
+isn't required.
+
 #### IMPORTANT: configuration precedence
 When starting, this plugin will load and apply the build/run/debug commands in the following order:
 1. tmux-compile.lua
 2. project_override_config
 3. build_run_config
 
-If there is no `tmux-compile.lua` file defined in the current working directory, the plugin will load
-the commands from the 'project_override_config' table inside the main config. If that is also not
-defined for the current working directory, then the plugin will default to the commands defined by
-the file extension of the current buffer
+If there is no `tmux-compile.lua` file defined in the current working directory, the plugin will
+load the commands from the 'project_override_config' table inside the main config. If that is also
+not defined for the current working directory, then the plugin will default to the commands defined
+by the file extension of the current buffer
 
 
 

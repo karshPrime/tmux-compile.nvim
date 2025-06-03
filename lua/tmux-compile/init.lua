@@ -15,6 +15,7 @@ M.config = {
     overlay_height_percent = 80,
     build_run_config = {},
     notify_missing_project_config = false,
+    local_config = "tmux-compile.lua",
 }
 
 function M.setup(aConfig)
@@ -22,7 +23,11 @@ function M.setup(aConfig)
         M.config[key] = value or M.config[key]
     end
 
-    local lLocalConfig = Helpers.search_project_defined_override_config(M.config["notify_missing_project_config"])
+    local lLocalConfig = Helpers.search_project_defined_override_config(
+        M.config["notify_missing_project_config"],
+        M.config["local_config"]
+    )
+
     if lLocalConfig ~= nil then
         M.config["project_override_config"] = lLocalConfig
         M.config["override_config_from_project"] = true
